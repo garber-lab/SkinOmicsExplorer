@@ -1,0 +1,8 @@
+default:
+  data:
+    base_dir: "/home/app_data/"
+
+production:
+
+development:
+  data: "/Users/yuqing/Dropbox (UMass Medical School)/Ongoing/data_hosting/shinyApp_content"

@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.env
+*.rds
+*.parquet
+*.feather
+*.fst
+*.csv
+*.tsv
+.cache/

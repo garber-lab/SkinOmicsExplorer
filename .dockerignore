@@ -1,0 +1,9 @@
+data/
+.env
+.cache/
+*.rds
+*.parquet
+*.feather
+*.fst
+*.csv
+*.tsv
