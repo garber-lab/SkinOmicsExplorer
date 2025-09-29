@@ -21,6 +21,7 @@ library(ComplexHeatmap)
 # library(circlize)
 
 options(scipen = 4) 
+setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
 for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 
 
@@ -70,7 +71,7 @@ server <- function(input, output, session) {
     if (Sys.info()[[7]] == 'root') {
       return("/home/app_data/")
     } else {
-      return("data/")
+      return("/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/")
     }
   })
   
