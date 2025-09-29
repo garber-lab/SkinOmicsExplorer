@@ -1,4 +1,4 @@
-modUI_SeuratEmbeddingPlot <- function(id){
+modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6, format_default = "png"){
     ns <- NS(id)
     bslib::layout_sidebar(
         sidebar = bslib::sidebar(
@@ -15,13 +15,13 @@ modUI_SeuratEmbeddingPlot <- function(id){
             ),
             bslib::input_switch(ns("label"), "Label in plot", value = T),
             bslib::input_switch(ns("legend"), "Show legend", value = F),
-            actionButton(ns("plot"), "Plot")
+            actionButton(ns("plot"), "Plot Plot Plot")
             ),
             wellPanel(
-                inlineInput("Plot width:", numericInput(ns("width"),NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-                inlineInput("Plot height:", numericInput(ns("height"),NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-                inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png","pdf","jpeg","tiff"), width = 70), label_width = "90px"),
-                downloadButton(ns("plot_embedding_download"), "Download plot")
+                inlineInput("Plot width:", numericInput(ns("width"),NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
+                inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
+                inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png","pdf","jpeg","tiff"), selected = format_default, width = 70), label_width = "90px"),
+                downloadButton(ns("plot_embedding_download"), "Download Download Download")
             )
         ),
         plotOutput(ns("plot_embedding"))
@@ -31,11 +31,6 @@ modUI_SeuratEmbeddingPlot <- function(id){
 
 modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_choices=NULL, reduction_choices=NULL, dataname){
     moduleServer(id, function(input, output, session){
-
-        output$test <- renderText({
-                is.null(groupby_choices)
-            })
-
         observeEvent(srt(), {
             req(srt())
             reductions <- if(!is.null(reduction_choices)) reduction_choices else Seurat::Reductions(srt())
@@ -64,7 +59,7 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_choices=NULL, reducti
             return(g)
 		})
         
-        output$plot_embedding <- renderPlot(plot_embedding()) |> bindEvent(input$plot)
+        output$plot_embedding <- renderPlot(plot_embedding(), res = 96) |> bindEvent(input$plot)
 
         output$plot_embedding_download <- downloadHandler(
             filename = function(){

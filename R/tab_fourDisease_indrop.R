@@ -4,17 +4,36 @@ tabUI_fourDisease_indrop <- function(id){
         layout_columns(
             bslib::card(
                 bslib::card_header("Seurat Embedding Plot"),
-                bslib::card_body(
-                    modUI_SeuratEmbeddingPlot(ns("dimplot"))
-                )
+                bslib::card_body(modUI_SeuratEmbeddingPlot(
+                    ns("dimplot"),
+                    width_default = 6, 
+                    height_default = 6, 
+                    format_default = "png"
+                ))
             ),
             bslib::card(
-                bslib::card_header("Seurat Embedding Plot"),
-                bslib::card_body(
-                    modUI_SeuratEmbeddingPlot(ns("dimplot2"))
-                )
+                card_header("Violin plot for normalized gene expression in skin conditions"),
+                card_body(modUI_SeuratVlnPlot(
+                    ns("vlnplot_skin_disease"),
+                    width_default = 6, 
+                    height_default = 4.5, 
+                    format_default = "png"
+                ))
             ),
             col_widths = c(6,6)
+        ),
+        card(
+            card_header("Violin plot for normalized gene expression"),
+            card_body(modUI_SeuratVlnPlot(ns("vlnplot")))
+        ),
+        card(
+            card_header("Violin plot for normalized gene expression in all cell types"),
+            card_body(modUI_SeuratVlnPlot(
+                ns("vlnplot_celltype"),
+                width_default = 12, 
+                height_default = 4.5, 
+                format_default = "png"
+            ))
         )
     )
 }
@@ -41,6 +60,25 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             id = "dimplot2",
             srt = srt,
             dataname = dataname
+        )
+        modServer_SeuratVlnPlot(
+            id = "vlnplot",
+            srt = srt,
+            dataname = dataname
+        )
+        modServer_SeuratVlnPlot(
+            id = "vlnplot_celltype",
+            srt = srt,
+            dataname = dataname,
+            groupby_choices = "subCellType.pub5.2",
+            splitby_choices = "CellType.abbr"
+        )
+        modServer_SeuratVlnPlot(
+            id = "vlnplot_skin_disease",
+            srt = srt,
+            dataname = dataname,
+            groupby_choices = "Skin",
+            splitby_choices = "Disease"
         )
 
         invisible(list(srt = srt))
