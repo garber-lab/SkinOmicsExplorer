@@ -1,0 +1,59 @@
+
+
+/* body is 1rem (16pm), the header shouldn't be smaller */
+.bslib-card .card-header {
+  font-size: 1rem;
+}
+
+/* nav bar font size large to match the body */
+.navbar {
+  --bs-navbar-brand-font-size: 1.3rem;
+}
+.nav-underline {
+  --bs-nav-link-font-size: 1rem;
+}
+
+
+/* remove card padding only when there's a sidebar layout inside */
+.card-body:has(.bslib-sidebar-layout) {
+  --bs-card-spacer-y: 0;
+  --bs-card-spacer-x: 0;
+  padding: 0; /* fallback in case variables are not respected */
+}
+
+
+/* #### make the wellPenal more compact #### */
+/* reduce the margin under input boxes */
+.well .form-group {
+  margin-bottom: 0.5rem;
+}
+/* reduce margin under labels in input */
+.well .shiny-input-container .control-label {
+  margin-bottom: .2rem;
+}
+/* reduce padding for input elements */
+.well .form-control, .well .selectize-input {
+  padding: .2rem .3rem;
+}
+/* reduce button height, but fill the whole line of wellPenal */
+.well .btn {
+  --bs-btn-padding-y: 0.3rem;
+  --bs-btn-padding-x: 1rem;
+  width: 100%;
+}
+
+
+
+
+
+/* #### other settings ####
+* reduce the sidebar padding
+.bslib-sidebar-layout{
+  --bslib-sidebar-padding: 1rem;
+  --bslib-spacer: 1rem;
+}
+#### other settings (end) #### */
+
+
+
+

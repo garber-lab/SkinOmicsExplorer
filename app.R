@@ -28,6 +28,7 @@ for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 ui = fluidPage( 
   
   useShinyjs(),
+  includeCSS("www/style.css"),
   
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "style.css")

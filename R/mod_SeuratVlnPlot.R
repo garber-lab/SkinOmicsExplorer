@@ -57,7 +57,7 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_choices=NULL, spl
         output$splitby_ui <- renderUI({
             choices <- splitby_options()
             req(length(choices) > 1) # returns NULL (hides UI) if condition fails
-            selectInput(ns("splitby"), "Bin groups by:", choices = c("Unselect" = "null", choices), selectize = FALSE)
+            selectInput(ns("splitby"), "Bin groups by:", choices = c("Unselect" = "null", choices))
         })
 
         groupby_param <- reactive({

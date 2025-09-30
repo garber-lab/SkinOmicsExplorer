@@ -15,13 +15,13 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
             ),
             bslib::input_switch(ns("label"), "Label in plot", value = T),
             bslib::input_switch(ns("legend"), "Show legend", value = F),
-            actionButton(ns("plot"), "Plot Plot Plot")
+            actionButton(ns("plot"), "Plot")
             ),
             wellPanel(
                 inlineInput("Plot width:", numericInput(ns("width"),NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
                 inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
                 inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png","pdf","jpeg","tiff"), selected = format_default, width = 70), label_width = "90px"),
-                downloadButton(ns("plot_embedding_download"), "Download Download Download")
+                downloadButton(ns("plot_embedding_download"), "Download")
             )
         ),
         plotOutput(ns("plot_embedding"))
