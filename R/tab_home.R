@@ -31,8 +31,8 @@ dataset_card_content <- function(title, tagline, specs=NULL, tech) {
   body <- append(body, list(tags$small(class = "text-muted", tech)))
 
   tagList(
-    card_header(title),
-    card_body(body)
+    bslib::card_header(title),
+    bslib::card_body(body)
   )
 }
 
@@ -130,13 +130,13 @@ tabUI_home <- function(id) {
   ns <- NS(id)
 
   tagList(
-    card(
-      card_header("Introduction"),
-      card_body(tags$p("!!introduction to this Shiny app.")) # !!! fill in
+    bslib::card(
+      bslib::card_header("Introduction"),
+      bslib::card_body(tags$p("!!introduction to this Shiny app.")) # !!! fill in
     ),
-    card(
-      card_header("Publication"),
-      card_body(tags$p("!!publication")) # !!! fill in
+    bslib::card(
+      bslib::card_header("Publication"),
+      bslib::card_body(tags$p("!!publication")) # !!! fill in
     ),
     accordion(
       accordion_panel(
@@ -144,22 +144,22 @@ tabUI_home <- function(id) {
         fluidRow(
           tags$h5("Four disease comparison"),
           layout_column_wrap(
-            card(tab_home_cards[["fourDisease_indrop"]]),
-            card(tab_home_cards[["fourDisease_nulisa"]]),
-            card(tab_home_cards[["fourDisease_seqfish"]]),
+            bslib::card(tab_home_cards[["fourDisease_indrop"]]),
+            bslib::card(tab_home_cards[["fourDisease_nulisa"]]),
+            bslib::card(tab_home_cards[["fourDisease_seqfish"]]),
             width = 1/2
           ),
           tags$h5(class = "mt-4", "Supplemental single-cell datasets"),
           layout_column_wrap(
-            card(tab_home_cards[["CLE_gse179633"]]),
-            card(tab_home_cards[["DM_10x"]]),
+            bslib::card(tab_home_cards[["CLE_gse179633"]]),
+            bslib::card(tab_home_cards[["DM_10x"]]),
             width = 1/2
           ),
           tags$h5(class = "mt-4", "UV perturbation series"),
           layout_column_wrap(
-            card(tab_home_cards[["UV_olink"]]),
-            card(tab_home_cards[["UV_seqfish"]]),
-            card(tab_home_cards[["UV_bulk"]]),
+            bslib::card(tab_home_cards[["UV_olink"]]),
+            bslib::card(tab_home_cards[["UV_seqfish"]]),
+            bslib::card(tab_home_cards[["UV_bulk"]]),
             width = 1/2
           )
         )
@@ -169,26 +169,26 @@ tabUI_home <- function(id) {
         fluidRow(
           tags$h5("scRNA-seq"),
           layout_column_wrap(
-            card(tab_home_cards[["fourDisease_indrop"]]),
-            card(tab_home_cards[["CLE_gse179633"]]),
-            card(tab_home_cards[["DM_10x"]]),
+            bslib::card(tab_home_cards[["fourDisease_indrop"]]),
+            bslib::card(tab_home_cards[["CLE_gse179633"]]),
+            bslib::card(tab_home_cards[["DM_10x"]]),
             width = 1/2
           ),
           tags$h5(class = "mt-4", "Proteomics"),
           layout_column_wrap(
-            card(tab_home_cards[["fourDisease_nulisa"]]),
-            card(tab_home_cards[["UV_olink"]]),
+            bslib::card(tab_home_cards[["fourDisease_nulisa"]]),
+            bslib::card(tab_home_cards[["UV_olink"]]),
             width = 1/2
           ),
           tags$h5(class = "mt-4", "Spatial transcriptomics"),
           layout_column_wrap(
-            card(tab_home_cards[["fourDisease_seqfish"]]),
-            card(tab_home_cards[["UV_seqfish"]]),
+            bslib::card(tab_home_cards[["fourDisease_seqfish"]]),
+            bslib::card(tab_home_cards[["UV_seqfish"]]),
             width = 1/2
           ),
           tags$h5(class = "mt-4", "Bulk RNA-seq"),
           layout_column_wrap(
-            card(tab_home_cards[["UV_bulk"]]),
+            bslib::card(tab_home_cards[["UV_bulk"]]),
             width = 1/2
           )
         )

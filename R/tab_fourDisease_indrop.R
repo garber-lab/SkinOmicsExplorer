@@ -12,8 +12,8 @@ tabUI_fourDisease_indrop <- function(id){
                 ))
             ),
             bslib::card(
-                card_header("Violin plot for normalized gene expression in skin conditions"),
-                card_body(modUI_SeuratVlnPlot(
+                bslib::card_header("Violin plot for normalized gene expression in skin conditions"),
+                bslib::card_body(modUI_SeuratVlnPlot(
                     ns("vlnplot_skin_disease"),
                     width_default = 6, 
                     height_default = 4.5, 
@@ -23,12 +23,12 @@ tabUI_fourDisease_indrop <- function(id){
             col_widths = c(6,6)
         ),
         card(
-            card_header("Violin plot for normalized gene expression"),
-            card_body(modUI_SeuratVlnPlot(ns("vlnplot")))
+            bslib::card_header("Violin plot for normalized gene expression"),
+            bslib::card_body(modUI_SeuratVlnPlot(ns("vlnplot")))
         ),
         card(
-            card_header("Violin plot for normalized gene expression in all cell types"),
-            card_body(modUI_SeuratVlnPlot(
+            bslib::card_header("Violin plot for normalized gene expression in all cell types"),
+            bslib::card_body(modUI_SeuratVlnPlot(
                 ns("vlnplot_celltype"),
                 width_default = 12, 
                 height_default = 4.5, 

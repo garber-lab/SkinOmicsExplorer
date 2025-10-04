@@ -2,8 +2,8 @@ library(shiny)
 library(bslib)
 library(shinyjs)
 library(Seurat)
-library(SeuratObject)
-library(future)
+# library(SeuratObject)
+# library(future)
 
 # library(tidyverse)
 library(tidyr)
@@ -11,7 +11,7 @@ library(ggplot2)
 library(plotly)
 library(dplyr)
 
-library(cowplot)
+# library(cowplot)
 # library(gridExtra)
 library(scSpatial)
 library(AddOns)
@@ -20,8 +20,8 @@ library(ComplexHeatmap)
 
 # library(circlize)
 
-options(scipen = 4) 
-setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
+options(scipen = 4)
+# setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
 for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 
 
