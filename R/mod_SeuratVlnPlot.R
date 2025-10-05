@@ -1,5 +1,15 @@
-modUI_SeuratVlnPlot <- function(id, width_default = 6, height_default = 6, format_default = "png"){
+modUI_SeuratVlnPlot <- function(id, width_default = 6, height_default = 6, format_default = "png", allow_download = TRUE){
     ns <- NS(id)
+    download_panel <- if (isTRUE(allow_download)) {
+        wellPanel(
+            inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
+            inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
+            inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "90px"),
+            downloadButton(ns("plot_violin_download"), "Download")
+        )
+    } else {
+        NULL
+    }
     layout_sidebar(
         sidebar = sidebar(
             wellPanel(
@@ -9,44 +19,39 @@ modUI_SeuratVlnPlot <- function(id, width_default = 6, height_default = 6, forma
                 input_switch(ns("plotmean"), "Plot mean", value = T),
                 actionButton(ns("plot"), "Plot")
             ),
-            wellPanel(
-                inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-                inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-                inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "90px"),
-                downloadButton(ns("plot_violin_download"), "Download")
-            )
+            download_panel
         ),
         plotOutput(ns("plot_violin"))
     )
 }
 
-modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_choices=NULL, splitby_choices=NULL){
+modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
         groupby_options <- reactiveVal(character())
         splitby_options <- reactiveVal(character())
 
-        # update the choices of groupby splitby inputs
-        observeEvent(srt(), {
+        # update the choices of groupby splitby inputs once data is available
+        observe({
             req(srt())
-            groupbys <- if(is.null(groupby_choices)){
+            groupbys <- if(is.null(groupby_column)){
                 md <- srt()@meta.data
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
             }else{
-                groupby_choices
+                groupby_column
             }
-            splitbys <- if(is.null(splitby_choices)){
+            splitbys <- if(is.null(splitby_column)){
                 md <- srt()@meta.data
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
             }else{
-                splitby_choices
+                splitby_column
             }
             updateSelectizeInput(session, "gene", choices = rownames(srt()), server = T)
             groupby_options(groupbys)
             splitby_options(splitbys)
-        }, ignoreInit = F)
+        })
 
         output$groupby_ui <- renderUI({
             choices <- groupby_options()
@@ -88,7 +93,7 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_choices=NULL, spl
             return(g)
         })
 
-        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot)
+        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot, srt())
 
         output$plot_violin_download <- downloadHandler(
             filename = function(){
@@ -106,9 +111,5 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_choices=NULL, spl
                 ggsave(filename = file, plot = plot_violin(), width = input$width, height = input$height, dpi = 300)
             }
         )
-
-
-        # # subset srt data
-        # srt <- reactive()
     })
 }

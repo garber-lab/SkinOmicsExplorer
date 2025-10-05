@@ -20,6 +20,9 @@
   --bs-card-spacer-x: 0;
   padding: 0; /* fallback in case variables are not respected */
 }
+.bslib-sidebar-layout > .main:has(.bslib-sidebar-layout){
+  padding: 0;
+}
 
 
 /* #### make the wellPenal more compact #### */
