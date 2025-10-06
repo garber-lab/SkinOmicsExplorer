@@ -2,7 +2,6 @@ modUI_SeuratSubset <- function(id){
     ns <- NS(id)
     tagList(
         wellPanel(
-            tags$p("Subset data (optional)"),
             uiOutput(ns("subsetby_ui")),
             actionButton(ns("run"), "Subset")
         )

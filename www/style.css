@@ -1,5 +1,4 @@
 
-
 /* body is 1rem (16pm), the header shouldn't be smaller */
 .bslib-card .card-header {
   font-size: 1rem;
@@ -20,9 +19,33 @@
   --bs-card-spacer-x: 0;
   padding: 0; /* fallback in case variables are not respected */
 }
+.card-body .bslib-sidebar-layout>.main {
+  --_padding: 0.5rem;
+}
+.card-body .bslib-sidebar-layout .sidebar-content .accordion-button {
+  padding: 0.75rem 1rem;
+}
+.card-body .bslib-sidebar-layout .sidebar-content .accordion-body {
+  padding: 1rem;
+  gap: 1rem;
+}
+.bslib-sidebar-layout[data-collapsible-desktop="false"][data-collapsible-mobile="false"] .sidebar-content {
+  --_padding-icon: var(--_padding);
+}
+.bslib-sidebar-layout[data-collapsible-desktop="false"][data-collapsible-mobile="false"] .sidebar-content:has(.accordion) {
+  padding-top: 0;
+}
+
+
+
+
+/* remove padding between nested sidebar layouts */
 .bslib-sidebar-layout > .main:has(.bslib-sidebar-layout){
   padding: 0;
 }
+
+
+
 
 
 /* #### make the wellPenal more compact #### */
@@ -45,6 +68,10 @@
   width: 100%;
 }
 
+.sidebar-content:has(.well) {
+  --bslib-spacer: 1rem;
+  --_padding: 1rem;
+}
 
 
 
@@ -56,7 +83,6 @@
   --bslib-spacer: 1rem;
 }
 #### other settings (end) #### */
-
 
 
 

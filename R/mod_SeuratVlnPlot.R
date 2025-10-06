@@ -1,4 +1,4 @@
-modUI_SeuratVlnPlot <- function(id, width_default = 6, height_default = 6, format_default = "png", allow_download = TRUE){
+modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, height_default = 6, format_default = "png", allow_download = TRUE){
     ns <- NS(id)
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
@@ -10,26 +10,66 @@ modUI_SeuratVlnPlot <- function(id, width_default = 6, height_default = 6, forma
     } else {
         NULL
     }
+    plot_panel <- wellPanel(
+        selectizeInput(ns("gene"), "Gene name:", choices = NULL),
+        uiOutput(ns("groupby_ui")),
+        uiOutput(ns("splitby_ui")),
+        input_switch(ns("plotmean"), "Plot mean", value = T),
+        actionButton(ns("plot"), "Plot")
+    )
+    sidebar_content <- if (!allow_subset) {
+        tagList(plot_panel, download_panel)
+    } else {
+        accordion(
+            accordion_panel(
+                title = "Subset data (optional)",
+                value = "subset",
+                modUI_SeuratSubset(ns("subset"))
+            ),
+            accordion_panel(
+                title = "Plot options",
+                value = "plot",
+                tagList(plot_panel, download_panel)
+            ),
+            multiple = FALSE,
+            open = "plot"
+        )
+    }
+
+
     layout_sidebar(
         sidebar = sidebar(
-            wellPanel(
-                selectizeInput(ns("gene"), "Gene name:", choices = NULL),
-                uiOutput(ns("groupby_ui")),
-                uiOutput(ns("splitby_ui")),
-                input_switch(ns("plotmean"), "Plot mean", value = T),
-                actionButton(ns("plot"), "Plot")
-            ),
-            download_panel
+            sidebar_content,
+            open = "always"
         ),
         plotOutput(ns("plot_violin"))
     )
 }
 
-modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL){
+modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
         groupby_options <- reactiveVal(character())
         splitby_options <- reactiveVal(character())
+        has_subset <- !is.null(subsetby_columns) && length(subsetby_columns) > 0
+        subset_srt <- NULL
+        if (has_subset) {
+            subset_srt <- modServer_SeuratSubset(
+                id = "subset",
+                srt = srt,
+                subsetby_columns = subsetby_columns
+            )
+        }
+
+        srt_for_plot <- reactive({
+            obj <- srt()
+            req(obj)
+            if (!has_subset) return(obj)
+            subset_obj <- subset_srt()
+            if (is.null(subset_obj)) return(obj)
+            if (ncol(subset_obj) == 0) return(obj)
+            subset_obj
+        })
 
         # update the choices of groupby splitby inputs once data is available
         observe({
@@ -83,9 +123,10 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
         })
 
         plot_violin <- reactive({
-            req(srt(), groupby_param(), input$gene)
+            plot_obj <- srt_for_plot()
+            req(plot_obj, groupby_param(), input$gene)
             g <- VlnPlot.xlabel(
-                srt(),
+                plot_obj,
                 input$gene,
                 group.by = groupby_param(),
                 split.by = splitby_param(),
@@ -93,7 +134,7 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
             return(g)
         })
 
-        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot, srt())
+        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot, srt_for_plot())
 
         output$plot_violin_download <- downloadHandler(
             filename = function(){

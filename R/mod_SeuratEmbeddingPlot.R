@@ -17,17 +17,18 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
                 ns("reduction"),
                 "Plot using embedding:",
                 choices = NULL
+                ),
+                selectInput(
+                    ns("groupby"),
+                    "Color the cells by:",
+                    choices = NULL
+                ),
+                bslib::input_switch(ns("label"), "Label in plot", value = T),
+                bslib::input_switch(ns("legend"), "Show legend", value = F),
+                actionButton(ns("plot"), "Plot")
             ),
-            selectInput(
-                ns("groupby"),
-                "Color the cells by:",
-                choices = NULL
-            ),
-            bslib::input_switch(ns("label"), "Label in plot", value = T),
-            bslib::input_switch(ns("legend"), "Show legend", value = F),
-            actionButton(ns("plot"), "Plot")
-            ),
-            download_panel
+            download_panel,
+            open = "always"
         ),
         plotOutput(ns("plot_embedding"))
     )

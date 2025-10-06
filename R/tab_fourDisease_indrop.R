@@ -13,32 +13,27 @@ tabUI_fourDisease_indrop <- function(id){
             ),
             bslib::card(
                 bslib::card_header("Violin plot for normalized gene expression in skin conditions"),
-                bslib::card_body(modUI_SeuratVlnPlot(
-                    ns("vlnplot_skin_disease"),
-                    width_default = 6, 
-                    height_default = 4.5, 
-                    format_default = "png"
-                ))
+                bslib::card_body(
+                    modUI_SeuratVlnPlot(
+                        ns("vlnplot_skin_disease"),
+                        width_default = 6, 
+                        height_default = 4.5, 
+                        format_default = "png",
+                        allow_subset = TRUE
+                        )
+                    )
             ),
             col_widths = c(6,6)
         ),
         card(
-            bslib::card_header("Violin plot for normalized gene expression"),
-            bslib::card_body(modUI_SeuratVlnPlot(ns("vlnplot")))
-        ),
-        card(
             bslib::card_header("Violin plot for normalized gene expression in all cell types"),
             bslib::card_body(
-                layout_sidebar(
-                    sidebar = sidebar(
-                        modUI_SeuratSubset(ns("subset_vlnplot_celltype"))
-                    ),
-                    modUI_SeuratVlnPlot(
-                        ns("vlnplot_celltype"),
-                        width_default = 12, 
-                        height_default = 4.5, 
-                        format_default = "png"
-                    )
+                modUI_SeuratVlnPlot(
+                    ns("vlnplot_celltype"),
+                    width_default = 12, 
+                    height_default = 4.5, 
+                    format_default = "png",
+                    allow_subset = TRUE
                 )
             )
         )
@@ -63,37 +58,23 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             srt = srt,
             dataname = dataname
         )
-        srt_subset_vlnplot_celltype <- modServer_SeuratSubset(
-            id = "subset_vlnplot_celltype",
-            srt = srt,
-            subsetby_columns = c("Disease", "Skin")
-        )
-        srt_for_vlnplot_celltype <- reactive({
-            req(srt())
-            subset_obj <- srt_subset_vlnplot_celltype()
-            if (is.null(subset_obj) || ncol(subset_obj) == 0) {
-                return(srt())
-            }
-            subset_obj
-        })
-        modServer_SeuratVlnPlot(
-            id = "vlnplot",
-            srt = srt,
-            dataname = dataname
-        )
+
         modServer_SeuratVlnPlot(
             id = "vlnplot_celltype",
-            srt = srt_for_vlnplot_celltype,
+            srt = srt,
             dataname = dataname,
             groupby_column = "subCellType.pub5.2",
-            splitby_column = "CellType.abbr"
+            splitby_column = "CellType.abbr",
+            subsetby_columns = c("Disease", "Skin")
         )
+
         modServer_SeuratVlnPlot(
             id = "vlnplot_skin_disease",
             srt = srt,
             dataname = dataname,
             groupby_column = "Skin",
-            splitby_column = "Disease"
+            splitby_column = "Disease",
+            subsetby_columns = c("subCellType.pub5.2")
         )
 
         invisible(list(srt = srt))
