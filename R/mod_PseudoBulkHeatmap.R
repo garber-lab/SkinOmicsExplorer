@@ -1,20 +1,22 @@
-modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, height_default = 6, format_default = "png", allow_download = TRUE){
+modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, format_default = "pdf", allow_download = TRUE){
     ns <- NS(id)
+    
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
             inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
             inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
             inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "90px"),
-            downloadButton(ns("plot_violin_download"), "Download")
+            downloadButton(ns("plot_heatmap_download"), "Download")
         )
     } else {
         NULL
     }
+    
     plot_panel <- wellPanel(
-        selectizeInput(ns("gene"), "Gene name:", choices = NULL),
+        selectizeInput(ns("gene"), "Gene name:", choices = NULL, multiple = TRUE),
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
-        input_switch(ns("plotmean"), "Plot mean", value = T),
+        bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
         actionButton(ns("plot"), "Plot")
     )
     sidebar_content <- if (!allow_subset) {
@@ -24,7 +26,7 @@ modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, hei
             accordion_panel(
                 title = "Subset data (optional)",
                 value = "subset",
-                modUI_SeuratSubset(ns("subset"))
+                modUI_BulkSubset(ns("subset"))
             ),
             accordion_panel(
                 title = "Plot options",
@@ -36,60 +38,69 @@ modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, hei
         )
     }
 
-
     layout_sidebar(
         sidebar = sidebar(
             sidebar_content,
             open = "always"
         ),
-        plotOutput(ns("plot_violin"))
+        plotOutput(ns("plot_heatmap"))
     )
 }
 
-modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
+
+modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
-        groupby_options <- reactiveVal(character())
-        splitby_options <- reactiveVal(character())
+
         has_subset <- !is.null(subsetby_columns) && length(subsetby_columns) > 0
-        subset_srt <- NULL
         if (has_subset) {
-            subset_srt <- modServer_SeuratSubset(
+            subset_ind <- modServer_BulkSubset(
                 id = "subset",
-                srt = srt,
+                bulk_tb = bulk_tb,
+                bulk_meta = bulk_meta,
                 subsetby_columns = subsetby_columns
             )
         }
 
-        srt_for_plot <- reactive({
-            obj <- srt()
-            req(obj)
-            if (!has_subset) return(obj)
-            subset_obj <- subset_srt()
-            if (is.null(subset_obj)) return(obj)
-            if (ncol(subset_obj) == 0) return(obj)
-            subset_obj
+        tb_for_plot <- reactive({
+            tb <- bulk_tb()
+            req(tb)
+            if (!has_subset) return(tb)
+            subset_tb <- tb[, subset_ind()]
+            if (is.null(subset_tb)) return(tb)
+            if (ncol(subset_tb) == 0) return(tb)
+            subset_tb
+        })
+        md_for_plot <- reactive({
+            md <- bulk_meta()
+            req(md)
+            if (!has_subset) return(md)
+            subset_idx <- colnames(tb_for_plot())
+            subset_md <- droplevels(md[rownames(md) %in% subset_idx,])
+            subset_md
         })
 
         # update the choices of groupby splitby inputs once data is available
+        groupby_options <- reactiveVal(character())
+        splitby_options <- reactiveVal(character())
         observe({
-            obj <- srt()
-            req(obj)
-            groupbys <- if(is.null(groupby_column)){
-                md <- obj@meta.data
+            tb <- bulk_tb()
+            md <- bulk_meta()
+            req(tb, md)
+            groupbys <- if (is.null(groupby_column)){
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
             }else{
                 groupby_column
             }
+
             splitbys <- if(is.null(splitby_column)){
-                md <- obj@meta.data
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
             }else{
                 splitby_column
             }
-            updateSelectizeInput(session, "gene", choices = rownames(obj), server = T)
+            updateSelectizeInput(session, "gene", choices = rownames(tb), server = T)
             groupby_options(groupbys)
             splitby_options(splitbys)
         })
@@ -123,34 +134,36 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
             input$splitby
         })
 
-        plot_violin <- reactive({
-            plot_obj <- srt_for_plot()
-            req(plot_obj, groupby_param(), input$gene)
-            g <- VlnPlot.xlabel(
-                plot_obj,
-                input$gene,
-                group.by = groupby_param(),
-                split.by = splitby_param(),
-                plot_mean = input$plotmean)
-            return(g)
+        plot_heatmap <- reactive({
+            plot_tb <- tb_for_plot()
+            plot_md <- md_for_plot()
+            req(plot_tb, plot_md, groupby_param(), input$gene)
+            hmap <- HeatmapPseodoBulk(
+                plot_tb,
+                plot_md,
+                genes = input$gene,
+                groupby = groupby_param(),
+                splitby = splitby_param(),
+                cluster_genes = isTRUE(input$cluster_genes)
+            )
+            draw(hmap)
         })
 
-        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot, srt_for_plot())
+        output$plot_heatmap <- renderPlot(plot_heatmap(), res = 96) |> bindEvent(input$plot, tb_for_plot(), md_for_plot())
 
-        output$plot_violin_download <- downloadHandler(
+        output$plot_heatmap_download <- downloadHandler(
             filename = function(){
                 groupby_str <- groupby_param()
                 splitby_str <- splitby_param()
                 
                 paste0(
-                    "VlnPlot_",dataname,
-                    "_gene_",input$gene,
+                    "Heatmap_",dataname,
                     "_groupby",groupby_str,
                     ifelse(is.null(splitby_str), "", paste0("_splitby",splitby_str)),
                     ".",input$format)
             },
             content = function(file){
-                ggsave(filename = file, plot = plot_violin(), width = input$width, height = input$height, dpi = 300)
+                ggsave(filename = file, plot = plot_heatmap(), width = input$width, height = input$height, dpi = 300)
             }
         )
     })

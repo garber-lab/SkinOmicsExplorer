@@ -52,7 +52,7 @@ ui = fluidPage(
       nav_panel("UV in vitro OLINK", tabUI_UV_olink('tab_UV_olink'))
     ),
     nav_menu(
-      "Transcriptomics",
+      "Spatial Transcriptomics",
       nav_panel("Four disease seqFISH", tabUI_fourDisease_seqfish('tab_fourDisease_seqfish')),
       nav_panel("UV on CLE NL skin seqFISH", tabUI_UV_seqfish('tab_UV_seqfish'))
     ),
@@ -90,5 +90,8 @@ server <- function(input, output, session) {
 
 }
 
-options(shiny.host = "0.0.0.0", shiny.port = 8789, shiny.reactlog = TRUE)
+options(shiny.host = "0.0.0.0", shiny.port = 8888, shiny.reactlog = TRUE)
+shinyApp(ui = ui, server = server)
+
+for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 shinyApp(ui = ui, server = server)

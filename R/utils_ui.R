@@ -203,3 +203,58 @@ VlnPlot.xlabel <- function(
 
   g
 }
+
+
+
+
+HeatmapPseodoBulk <- function(tb, md, genes=NULL, groupby, splitby = NULL, cluster_genes=FALSE){
+  if (!is.null(genes)) {
+    tb <- tb[genes, ]
+  }
+  # aggregate expression by groupby and splitby
+  df <- md[,c(groupby, splitby), drop=FALSE]
+  df$group <- apply(df, 1, function(x) paste0(x, collapse = ":"))
+  groups <- split(1:nrow(df), df$group)
+  agg_tb <- sapply(groups, function(idx){
+    rowSums(tb[,idx,drop=FALSE])
+  })
+  agg_md <- as.data.frame(do.call(rbind, strsplit(colnames(agg_tb), ":")))
+  colnames(agg_md) <- c(groupby, splitby)
+  agg_md[,groupby] <- factor(agg_md[,groupby], levels = levels(md[,groupby]))
+  if (!is.null(splitby)){
+    agg_md[,splitby] <- factor(agg_md[,splitby], levels = levels(md[,splitby]))
+  }
+
+  if (!is.null(splitby)){
+    col_splitby <- agg_md[,splitby]
+  }else{
+    col_splitby <- NULL
+  }
+
+  agg_tb_norm <- apply(agg_tb, 2, function(x) x / sum(x) * 1e6)
+  agg_tb_norm_scaled <- t(scale(t(agg_tb_norm)))
+
+  hmap <- ComplexHeatmap::Heatmap(agg_tb_norm_scaled,
+    name = "Expression",
+    cluster_rows = cluster_genes,
+    cluster_columns = FALSE,
+    show_row_names = TRUE,
+    show_column_names = TRUE,
+    show_row_dend = FALSE,
+    row_names_side = "left",
+    column_split = col_splitby,
+    column_order = order(agg_md[, groupby])
+  )
+  return(hmap)
+}
+# tb <- readRDS('/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds')        
+# md <- as.data.frame(do.call(rbind, strsplit(colnames(tb), ":")))
+# colnames(md) <- c("CellType","Disease","Skin")
+# md$colName <- colnames(tb)
+# md$Disease <- factor(md$Disease, levels=c("HC","DM","CLE","Pso","Vit"))
+# md$CellType <- factor(md$CellType, levels = c("MC","Lymph","KC","Mel"))
+# md$Skin <- factor(md$Skin, levels = c("H","NL","L"))
+
+# groupby <- "Skin"
+# splitby <- "Disease"
+# splitby <- NULL

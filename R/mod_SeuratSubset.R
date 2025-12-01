@@ -111,11 +111,12 @@ modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL){
         })
 
         subset_result <- reactive({
-            req(srt())
+            obj <- srt()
+            req(obj)
             specs <- column_specs()
-            if (length(specs) == 0) return(srt())
+            if (length(specs) == 0) return(obj)
 
-            md <- srt()@meta.data
+            md <- obj@meta.data
             keep <- rep(TRUE, nrow(md))
 
             for (spec in specs) {
@@ -147,9 +148,9 @@ modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL){
             keep[is.na(keep)] <- FALSE
             cells_to_keep <- rownames(md)[keep]
             if (!length(cells_to_keep)) {
-                return(srt()[, character(0)])
+                return(obj[, character(0)])
             }
-            srt()[, cells_to_keep, drop = FALSE]
+            obj[, cells_to_keep]
         }) |> bindEvent(input$run, ignoreNULL = FALSE)
 
         subset_result

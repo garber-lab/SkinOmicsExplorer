@@ -3,25 +3,35 @@ tabUI_fourDisease_indrop <- function(id){
     tagList(
         layout_columns(
             bslib::card(
+                class = "mb-3",
+                bslib::card_body(
+                    tags$div(
+                        tags$h5("Abbreviations"),
+                        tags$p(tags$strong("Disease types:")),
+                        tags$ul(
+                            tags$li("HC - Healthy Control"),
+                            tags$li("DM - Dermatomyositis"),
+                            tags$li("CLE - Cutaneous Lupus Erythematosus"),
+                            tags$li("Pso - Psoriasis"),
+                            tags$li("Vit - Vitiligo")
+                        ),
+                        tags$p(tags$strong("Skin conditions:")),
+                        tags$ul(
+                            tags$li("H - Healthy"),
+                            tags$li("NL - Non-Lesional"),
+                            tags$li("L - Lesional")
+                        )
+                    )
+                )
+            ),
+            bslib::card(
                 bslib::card_header("Seurat Embedding Plot"),
                 bslib::card_body(modUI_SeuratEmbeddingPlot(
                     ns("dimplot"),
-                    width_default = 6, 
-                    height_default = 6, 
+                    width_default = 6,
+                    height_default = 6,
                     format_default = "png"
                 ))
-            ),
-            bslib::card(
-                bslib::card_header("Violin plot for normalized gene expression in skin conditions"),
-                bslib::card_body(
-                    modUI_SeuratVlnPlot(
-                        ns("vlnplot_skin_disease"),
-                        width_default = 6, 
-                        height_default = 4.5, 
-                        format_default = "png",
-                        allow_subset = TRUE
-                        )
-                    )
             ),
             col_widths = c(6,6)
         ),
@@ -30,12 +40,39 @@ tabUI_fourDisease_indrop <- function(id){
             bslib::card_body(
                 modUI_SeuratVlnPlot(
                     ns("vlnplot_celltype"),
-                    width_default = 12, 
-                    height_default = 4.5, 
+                    width_default = 12,
+                    height_default = 4.5,
                     format_default = "png",
                     allow_subset = TRUE
                 )
             )
+        ),
+        layout_columns(
+            bslib::card(
+                bslib::card_header("Violin plot for normalized gene expression in skin conditions"),
+                bslib::card_body(
+                    modUI_SeuratVlnPlot(
+                        ns("vlnplot_skin_disease"),
+                        width_default = 6,
+                        height_default = 4.5,
+                        format_default = "png",
+                        allow_subset = TRUE
+                        )
+                    )
+            ),
+            bslib::card(
+                bslib::card_header("Heatmap for pseudo-bulked gene expression in skin conditions"),
+                bslib::card_body(
+                    modUI_PseudoBulkHeatmap(
+                        ns("pseudoBulk_heatmap"),
+                        width_default = 6,
+                        height_default = 10,
+                        format_default = "pdf",
+                        allow_subset = TRUE
+                    )
+                )
+            ),
+            col_widths = c(6,6)
         )
     )
 }
@@ -53,6 +90,23 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             return(obj)
         })
 
+        bulk_tb <- reactive({
+            tb <- readRDS(paste0(data_path(), 'fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds'))
+            return(tb)
+        })
+
+        bulk_meta <- reactive({
+            df <- do.call(rbind, strsplit(colnames(bulk_tb()), ":"))
+            df <- as.data.frame(df)
+            colnames(df) <- c("CellType","Disease","Skin")
+            obj <- srt()
+            df[, "CellType"] <- factor(df[,"CellType"], levels = levels(obj$CellType))
+            df[, "Disease"] <- factor(df[,"Disease"], levels = levels(obj$Disease))
+            df[, "Skin"] <- factor(df[,"Skin"], levels = levels(obj$Skin))
+            rownames(df) <- colnames(bulk_tb())
+            return(df)
+        })
+
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
@@ -63,8 +117,8 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             id = "vlnplot_celltype",
             srt = srt,
             dataname = dataname,
-            groupby_column = "subCellType.pub5.2",
-            splitby_column = "CellType.abbr",
+            groupby_column = "CellSubtype",
+            splitby_column = "CellType",
             subsetby_columns = c("Disease", "Skin")
         )
 
@@ -74,9 +128,18 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             dataname = dataname,
             groupby_column = "Skin",
             splitby_column = "Disease",
-            subsetby_columns = c("subCellType.pub5.2")
+            subsetby_columns = c("CellSubtype")
         )
 
+        modServer_PseudoBulkHeatmap(
+            id = "pseudoBulk_heatmap",
+            bulk_tb = bulk_tb,
+            bulk_meta = bulk_meta,
+            dataname = dataname,
+            groupby_column = "Skin",
+            splitby_column = "Disease",
+            subsetby_columns = c("CellType")
+        )
         invisible(list(srt = srt))
     })
 }
