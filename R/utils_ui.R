@@ -14,36 +14,36 @@ inlineInput <- function(label, input, label_width = "100px", gap = "5px") {
 ### group inputs. similar to wellPanel() but with no border
 inputGroup <- function(..., margin_bottom = 0) {
   div(
-    style = paste0("margin-bottom: ",margin_bottom,"px;"),  # adjust spacing once
+    style = paste0("margin-bottom: ", margin_bottom, "px;"), # adjust spacing once
     ...
   )
 }
 
 
-test_ggplot <- function(){
-    ggplot(data.frame(x=c(1,2), y=c(2,1))) + geom_point(aes(x=x,y=y))
+test_ggplot <- function() {
+  ggplot(data.frame(x = c(1, 2), y = c(2, 1))) +
+    geom_point(aes(x = x, y = y))
 }
 
 VlnPlot.xlabel <- function(
-  object,
-  gene,
-  group.by,
-  title = "",
-  assay = NULL,
-  slot = "data",
-  log_scale = FALSE,
-  colors = NULL,
-  split.by = NULL,
-  spread = NULL,
-  jitter_pts = TRUE,
-  plot_mean = TRUE,
-  size = 0.5,
-  sig = 3,
-  number_labels = TRUE,
-  text_sizes = c(13.2, 11, 8.8, 11, 8.8, 8, 3), # c(15, 10, 7, 10, 7, 7, 2),
-  alpha = 0.5,
-  theme = "classic"
-) {
+    object,
+    gene,
+    group.by,
+    title = "",
+    assay = NULL,
+    slot = "data",
+    log_scale = FALSE,
+    colors = NULL,
+    split.by = NULL,
+    spread = NULL,
+    jitter_pts = TRUE,
+    plot_mean = TRUE,
+    size = 0.5,
+    sig = 3,
+    number_labels = TRUE,
+    text_sizes = c(13.2, 11, 8.8, 11, 8.8, 8, 3), # c(15, 10, 7, 10, 7, 7, 2),
+    alpha = 0.5,
+    theme = "classic") {
   split.by <- split.by %||% character(0)
   meta_cols <- c(group.by, split.by)
   meta_cols <- meta_cols[meta_cols %in% colnames(object@meta.data)]
@@ -98,8 +98,7 @@ VlnPlot.xlabel <- function(
     g <- g + scale_fill_manual(values = colors)
   }
 
-  g <- g + switch(
-    theme,
+  g <- g + switch(theme,
     bw = theme_bw(),
     theme_classic()
   )
@@ -175,7 +174,7 @@ VlnPlot.xlabel <- function(
       ))
 
       g <- g + scale_y_continuous(
-        sec.axis = sec_axis(~ ./(scale * 0.5), name = "Mean Expression")
+        sec.axis = sec_axis(~ . / (scale * 0.5), name = "Mean Expression")
       )
     }
   }
@@ -207,27 +206,27 @@ VlnPlot.xlabel <- function(
 
 
 
-HeatmapPseodoBulk <- function(tb, md, genes=NULL, groupby, splitby = NULL, cluster_genes=FALSE){
+HeatmapPseodoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
   if (!is.null(genes)) {
     tb <- tb[genes, ]
   }
   # aggregate expression by groupby and splitby
-  df <- md[,c(groupby, splitby), drop=FALSE]
+  df <- md[, c(groupby, splitby), drop = FALSE]
   df$group <- apply(df, 1, function(x) paste0(x, collapse = ":"))
   groups <- split(1:nrow(df), df$group)
-  agg_tb <- sapply(groups, function(idx){
-    rowSums(tb[,idx,drop=FALSE])
+  agg_tb <- sapply(groups, function(idx) {
+    rowSums(tb[, idx, drop = FALSE])
   })
   agg_md <- as.data.frame(do.call(rbind, strsplit(colnames(agg_tb), ":")))
   colnames(agg_md) <- c(groupby, splitby)
-  agg_md[,groupby] <- factor(agg_md[,groupby], levels = levels(md[,groupby]))
-  if (!is.null(splitby)){
-    agg_md[,splitby] <- factor(agg_md[,splitby], levels = levels(md[,splitby]))
+  agg_md[, groupby] <- factor(agg_md[, groupby], levels = levels(md[, groupby]))
+  if (!is.null(splitby)) {
+    agg_md[, splitby] <- factor(agg_md[, splitby], levels = levels(md[, splitby]))
   }
 
-  if (!is.null(splitby)){
-    col_splitby <- agg_md[,splitby]
-  }else{
+  if (!is.null(splitby)) {
+    col_splitby <- agg_md[, splitby]
+  } else {
     col_splitby <- NULL
   }
 
@@ -247,7 +246,7 @@ HeatmapPseodoBulk <- function(tb, md, genes=NULL, groupby, splitby = NULL, clust
   )
   return(hmap)
 }
-# tb <- readRDS('/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds')        
+# tb <- readRDS('/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds')
 # md <- as.data.frame(do.call(rbind, strsplit(colnames(tb), ":")))
 # colnames(md) <- c("CellType","Disease","Skin")
 # md$colName <- colnames(tb)
@@ -258,3 +257,190 @@ HeatmapPseodoBulk <- function(tb, md, genes=NULL, groupby, splitby = NULL, clust
 # groupby <- "Skin"
 # splitby <- "Disease"
 # splitby <- NULL
+
+
+
+
+
+ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size = 0.1,
+                             cols = NULL, alpha = 1, highlight.by = NULL, highlight.groups = NULL,
+                             highlight.size = 0.2, highlight.cols = NULL, highlight.alpha = 1,
+                             molecules = NULL, molecules.size = 0.1, molecules.cols = NULL,
+                             molecules.alpha = 1, dark.background = T, crop = NULL, flip = F,
+                             scalebar.length = NULL, scalebar.numConv = 1, scalebar.unit = NULL, scalebar.position = "bottomright",
+                             scalebar.color = NULL, scalebar.text.size = 3, scalebar.margin = 0.03) {
+  if (is.null(group.by)) {
+    group.by <- "ident"
+  }
+
+  fov_image <- object@images[[fov]]
+  coords <- fov_image$centroids@coords
+  df <- data.frame(
+    x = coords[, 1],
+    y = coords[, 2],
+    stringsAsFactors = FALSE
+  )
+
+  ind.fov <- match(fov_image$centroids@cells, colnames(object))
+  df.meta <- FetchData(object = object, vars = c(group.by, split.by), cells = ind.fov)
+
+  if (is.null(highlight.by)) {
+    highlight.by <- group.by
+  } else if (!identical(highlight.by, group.by)) {
+    df.meta[[highlight.by]] <- object@meta.data[ind.fov, highlight.by]
+  }
+
+  df.meta$highlight <- ifelse(df.meta[[highlight.by]] %in% highlight.groups, "y", "n")
+  df <- cbind(df, df.meta)
+
+  if (!is.null(molecules)) {
+    valid_molecules <- molecules[molecules %in% rownames(object)]
+    missing <- setdiff(molecules, valid_molecules)
+    if (length(missing) > 0) {
+      message("Molecules not in the object: ", paste(missing, collapse = ","))
+    }
+    if (length(valid_molecules) > 0) {
+      molecule_coords <- fov_image@molecules$molecules[valid_molecules]
+      df.mol <- do.call(rbind, lapply(names(molecule_coords), function(name) {
+        mol_coords <- molecule_coords[[name]]@coords
+        data.frame(
+          x = mol_coords[, 1],
+          y = mol_coords[, 2],
+          mol = name,
+          stringsAsFactors = FALSE
+        )
+      }))
+      colnames(df.mol)[3] <- group.by
+
+      if (!is.null(split.by)) {
+        split_values <- unique(df[[split.by]])
+        df_mol_base <- df.mol
+        df.mol <- do.call(rbind, lapply(split_values, function(val) {
+          tmp <- df_mol_base
+          tmp[[split.by]] <- val
+          tmp
+        }))
+      }
+
+      df.mol$highlight <- "m"
+      df <- rbind(df, df.mol)
+    }
+  }
+
+  plot_xlim <- range(df$x, na.rm = TRUE)
+  plot_ylim <- range(df$y, na.rm = TRUE)
+
+  g <- ggplot(df) +
+    geom_point(aes_string(x = "x", y = "y", alpha = "highlight", size = "highlight", colour = group.by),
+      shape = 16
+    ) +
+    theme_classic() +
+    theme(
+      axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(),
+      axis.line = element_blank(), panel.grid = element_blank()
+    ) +
+    guides(colour = guide_legend(title = group.by), size = "none", alpha = "none") +
+    scale_size_manual(values = c(y = highlight.size, n = size, m = molecules.size)) +
+    scale_alpha_manual(values = c(y = highlight.alpha, n = alpha, m = molecules.alpha))
+
+  g2 <- ggplot_build(g)
+  color_scale <- g2$plot$scales$get_scales("colour")
+  cols.default <- color_scale$palette.cache
+  names(cols.default) <- sort(unique(df[[group.by]]))
+
+  effective.cols <- cols
+  if (!is.null(highlight.cols)) {
+    if (is.null(effective.cols)) {
+      effective.cols <- cols.default
+    }
+    effective.cols[names(highlight.cols)] <- highlight.cols
+  }
+  if (!is.null(molecules.cols)) {
+    if (is.null(effective.cols)) {
+      effective.cols <- cols.default
+    }
+    effective.cols[names(molecules.cols)] <- molecules.cols
+  }
+  if (!is.null(effective.cols)) {
+    g <- g + scale_color_manual(values = effective.cols)
+  }
+
+  if (!is.null(split.by)) {
+    g <- g + facet_wrap(reformulate(split.by))
+  }
+
+  coord_args <- list(ratio = 1)
+  if (!is.null(crop)) {
+    if (identical(crop, TRUE)) {
+      crop <- c(min(df$x) - 1, max(df$x) + 1, min(df$y) - 1, max(df$y) + 1)
+    } else if (length(crop) != 4) {
+      stop("crop must be TRUE or a numeric vector c(min.x, max.x, min.y, max.y).")
+    }
+    plot_xlim <- crop[1:2]
+    plot_ylim <- crop[3:4]
+  }
+
+  g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
+
+  if (dark.background) {
+    g <- g + theme(panel.background = element_rect(fill = "black", colour = "black"))
+  }
+
+  if (!is.null(scalebar.length)) {
+    if (!is.numeric(scalebar.length) || length(scalebar.length) != 1 || scalebar.length <= 0) {
+      stop("scalebar.length must be a positive numeric value.")
+    }
+
+    span_x <- diff(plot_xlim)
+    span_y <- diff(plot_ylim)
+    margin <- max(scalebar.margin, 0)
+    margin_x <- span_x * margin
+    margin_y <- span_y * margin
+    offset_y <- if (span_y > 0) span_y * 0.02 else span_x * 0.02
+    bar_colour <- if (is.null(scalebar.color)) {
+      if (isTRUE(dark.background)) "white" else "black"
+    } else {
+      scalebar.color
+    }
+
+    if (is.character(scalebar.position)) {
+      pos <- match.arg(scalebar.position, c("bottomright", "bottomleft", "topright", "topleft"))
+      if (scalebar.length > span_x) {
+        warning("scalebar.length exceeds the x-range of the plot and may be clipped.", call. = FALSE)
+      }
+
+      from_left <- grepl("left", pos)
+      from_bottom <- grepl("bottom", pos)
+
+      x_start <- if (from_left) plot_xlim[1] + margin_x else plot_xlim[2] - margin_x - scalebar.length
+      y_start <- if (from_bottom) plot_ylim[1] + margin_y else plot_ylim[2] - margin_y
+      label_y <- if (from_bottom) y_start + offset_y else y_start - offset_y
+      text_vjust <- if (from_bottom) 0 else 1
+    } else if (is.numeric(scalebar.position) && length(scalebar.position) == 2) {
+      x_start <- scalebar.position[1]
+      y_start <- scalebar.position[2]
+      label_y <- y_start + offset_y
+      text_vjust <- 0
+    } else {
+      stop("scalebar.position must be 'bottomright', 'bottomleft', 'topright', 'topleft', or a numeric length-2 vector.")
+    }
+
+    x_end <- x_start + scalebar.length
+    scalebar.label <- round(scalebar.length * scalebar.numConv, digits = 2)
+    label <- if (is.null(scalebar.unit) || scalebar.unit == "") {
+      scalebar.label
+    } else {
+      paste(scalebar.label, scalebar.unit)
+    }
+
+    g <- g +
+      annotate("segment", x = x_start, xend = x_end, y = y_start, yend = y_start, colour = bar_colour, linewidth = 0.5) +
+      annotate("text", x = (x_start + x_end) / 2, y = label_y, label = label, colour = bar_colour, size = scalebar.text.size, vjust = text_vjust)
+  }
+
+  if (flip) {
+    g <- g + coord_flip()
+  }
+
+  g
+}
