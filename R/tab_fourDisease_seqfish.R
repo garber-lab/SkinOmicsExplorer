@@ -42,6 +42,14 @@ tabUI_fourDisease_seqfish <- function(id) {
                 size_perInch_default = 500, # um per inch
                 format_default = "png"
             ))
+        ),
+        bslib::card(
+            bslib::card_header("Spatial feature Plot"),
+            bslib::card_body(modUI_SeuratImageFeaturePlot(
+                ns("image_featureplot"),
+                size_perInch_default = 500, # um per inch
+                format_default = "png"
+            ))
         )
     )
 }
@@ -160,6 +168,18 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             fov_choices = NULL,
             groupby_column = "CellSubtype",
             groupby_colors = colors.celltype,
+            scalebar_length = 4854.369,
+            scalebar_numConv = 0.103,
+            scalebar_unit = "μm",
+            scalebar_position_default = fov.scalebar.position,
+            fov.size = fov.sizes.um
+        )
+
+        modServer_SeuratImageFeaturePlot(
+            id = "image_featureplot",
+            srt = srt,
+            dataname = dataname,
+            fov_choices = NULL,
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
             scalebar_unit = "μm",

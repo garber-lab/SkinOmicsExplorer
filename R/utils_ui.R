@@ -465,3 +465,139 @@ ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size
 
   g
 }
+
+
+
+
+ImageFeaturePlot.ssc <- function(object, features, fov = NULL, assay = NULL, cols = c("lightgrey", "firebrick1"),
+                                 size = 0.2, alpha = 1, min.cutoff = NA, max.cutoff = NA,
+                                 dark.background = T, coord.fixed = T, crop = NULL, scalebar.length = NULL, 
+                                 scalebar.numConv = 1, scalebar.unit = NULL, scalebar.position = "bottomright",
+                                 scalebar.color = NULL, scalebar.text.size = 3, scalebar.margin = 0.03) {
+  
+  if (is.null(assay)) {
+    assay <- DefaultAssay(object)
+  }
+  
+  fov_image <- object@images[[fov]]
+  coords <- fov_image$centroids@coords
+  df <- data.frame(
+    x = coords[, 1],
+    y = coords[, 2],
+    stringsAsFactors = FALSE
+  )
+  
+  ind.fov <- match(fov_image$centroids@cells, colnames(object))
+  df.meta <- t(object@assays[[assay]]@layers$data[rownames(object) %in% features, ind.fov, drop = FALSE])
+  colnames(df.meta) <- features
+  if (!is.na(min.cutoff)) {
+    df.meta <- apply(df.meta, 2, function(x) {
+      x[x < min.cutoff] <- min.cutoff
+    })
+  }
+  if (!is.na(max.cutoff)) {
+    df.meta <- apply(df.meta, 2, function(x) {
+      x[x > max.cutoff] <- max.cutoff
+    })
+  }
+  
+  if (!is.null(scalebar.length)) {
+    if (!is.numeric(scalebar.length) || length(scalebar.length) != 1 || scalebar.length <= 0) {
+      stop("scalebar.length must be a positive numeric value.")
+    }
+  }
+  
+  g_list <- list()
+  for (i in seq_along(features)){
+    feature <- features[i]
+    df$feature_value <- df.meta[, feature]
+
+    plot_xlim <- range(df$x, na.rm = TRUE)
+    plot_ylim <- range(df$y, na.rm = TRUE)
+    
+    g <- ggplot(df) +
+      geom_point(aes(x = x, y = y, colour = feature_value), shape = 16, size = size, alpha = alpha) +
+      theme_classic() +
+      theme(
+        axis.title = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(),
+        axis.line = element_blank(), panel.grid = element_blank()
+      ) +
+      scale_color_gradientn(colours = cols, na.value = "lightgrey", name = feature)
+
+    coord_args <- list(ratio = 1)
+    if (!is.null(crop)) {
+      if (identical(crop, TRUE)) {
+        crop <- c(min(df$x) - 1, max(df$x) + 1, min(df$y) - 1, max(df$y) + 1)
+      } else if (length(crop) != 4) {
+        stop("crop must be TRUE or a numeric vector c(min.x, max.x, min.y, max.y).")
+      }
+      plot_xlim <- crop[1:2]
+      plot_ylim <- crop[3:4]
+    }
+    
+    g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
+    
+    if (dark.background) {
+      g <- g + theme(panel.background = element_rect(fill = "black", colour = "black"))
+    }
+    
+    if (coord.fixed) {
+      g <- g + coord_fixed(ratio = 1)
+    }
+    
+    # Add scalebar if specified
+    if (!is.null(scalebar.length)) {
+      span_x <- diff(plot_xlim)
+      span_y <- diff(plot_ylim)
+      margin <- max(scalebar.margin, 0)
+      margin_x <- span_x * margin
+      margin_y <- span_y * margin
+      offset_y <- if (span_y > 0) span_y * 0.02 else span_x * 0.02
+      bar_colour <- if (is.null(scalebar.color)) {
+        if (isTRUE(dark.background)) "white" else "black"
+      } else {
+        scalebar.color
+      }
+
+      if (is.character(scalebar.position)) {
+        pos <- match.arg(scalebar.position, c("bottomright", "bottomleft", "topright", "topleft"))
+        if (scalebar.length > span_x) {
+          warning("scalebar.length exceeds the x-range of the plot and may be clipped.", call. = FALSE)
+        }
+
+        from_left <- grepl("left", pos)
+        from_bottom <- grepl("bottom", pos)
+
+        x_start <- if (from_left) plot_xlim[1] + margin_x else plot_xlim[2] - margin_x - scalebar.length
+        y_start <- if (from_bottom) plot_ylim[1] + margin_y else plot_ylim[2] - margin_y
+        label_y <- if (from_bottom) y_start + offset_y else y_start - offset_y
+        text_vjust <- if (from_bottom) 0 else 1
+      } else if (is.numeric(scalebar.position) && length(scalebar.position) == 2) {
+        x_start <- scalebar.position[1]
+        y_start <- scalebar.position[2]
+        label_y <- y_start + offset_y
+        text_vjust <- 0
+      } else {
+        stop("scalebar.position must be 'bottomright', 'bottomleft', 'topright', 'topleft', or a numeric length-2 vector.")
+      }
+
+      x_end <- x_start + scalebar.length
+      scalebar.label <- round(scalebar.length * scalebar.numConv, digits = 2)
+      label <- if (is.null(scalebar.unit) || scalebar.unit == "") {
+        scalebar.label
+      } else {
+        paste(scalebar.label, scalebar.unit)
+      }
+
+      g <- g +
+        annotate("segment", x = x_start, xend = x_end, y = y_start, yend = y_start, colour = bar_colour, linewidth = 0.5) +
+        annotate("text", x = (x_start + x_end) / 2, y = label_y, label = label, colour = bar_colour, size = scalebar.text.size, vjust = text_vjust)
+    }
+    
+    g_list[[i]] <- g
+  }
+  
+  plots <- plot_grid(plotlist = g_list, ncol = ceiling(sqrt(length(features))))
+  
+  return(plots)
+}

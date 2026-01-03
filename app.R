@@ -11,7 +11,7 @@ library(ggplot2)
 library(plotly)
 library(dplyr)
 
-# library(cowplot)
+library(cowplot)
 # library(gridExtra)
 library(scSpatial)
 library(AddOns)
