@@ -490,6 +490,7 @@ ImageFeaturePlot.ssc <- function(object, features, fov = NULL, assay = NULL, col
   ind.fov <- match(fov_image$centroids@cells, colnames(object))
   df.meta <- t(object@assays[[assay]]@layers$data[rownames(object) %in% features, ind.fov, drop = FALSE])
   colnames(df.meta) <- features
+
   if (!is.na(min.cutoff)) {
     df.meta <- apply(df.meta, 2, function(x) {
       x[x < min.cutoff] <- min.cutoff
@@ -630,7 +631,8 @@ ImageFeaturePlot.contour <- function(object, feature, fov, assay = NULL,
   df$expr <- object@assays[[assay]]@layers$data[rownames(object) == feature, match(rownames(df), colnames(object)), drop = TRUE]
   
   if (!is.null(group.by)){
-    df$group.by <- object@meta.data[,group.by]
+    ind.fov <- match(object@images[[fov]]$centroids@cells, colnames(object))
+    df$group.by <- object@meta.data[ind.fov,group.by]
   }
 
   if (!is.null(scalebar.length)) {

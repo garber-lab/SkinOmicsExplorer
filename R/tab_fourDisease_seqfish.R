@@ -36,6 +36,18 @@ tabUI_fourDisease_seqfish <- function(id) {
             col_width = c(6, 6)
         ),
         bslib::card(
+            bslib::card_header("Violin plot for normalized gene expression in all cell types"),
+            bslib::card_body(
+                modUI_SeuratVlnPlot(
+                    ns("vlnplot_celltype"),
+                    width_default = 19,
+                    height_default = 4.5,
+                    format_default = "png",
+                    allow_subset = FALSE
+                )
+            )
+        ),
+        bslib::card(
             bslib::card_header("Spatial embedding Plot"),
             bslib::card_body(modUI_SeuratImageDimPlot(
                 ns("image_dimplot"),
@@ -43,21 +55,24 @@ tabUI_fourDisease_seqfish <- function(id) {
                 format_default = "png"
             ))
         ),
-        bslib::card(
-            bslib::card_header("Spatial feature Plot"),
-            bslib::card_body(modUI_SeuratImageFeaturePlot(
-                ns("image_featureplot"),
-                size_perInch_default = 500, # um per inch
-                format_default = "png"
-            ))
-        ),
-        bslib::card(
-            bslib::card_header("Spatial feature Plot (contour)"),
-            bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
-                ns("image_featureplot_contour"),
-                size_perInch_default = 500, # um per inch
-                format_default = "png"
-            ))
+        layout_columns(
+            bslib::card(
+                bslib::card_header("Spatial feature Plot"),
+                bslib::card_body(modUI_SeuratImageFeaturePlot(
+                    ns("image_featureplot"),
+                    size_perInch_default = 500, # um per inch
+                    format_default = "png"
+                ))
+            ),
+            bslib::card(
+                bslib::card_header("Spatial feature Plot (contour)"),
+                bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
+                    ns("image_featureplot_contour"),
+                    size_perInch_default = 500, # um per inch
+                    format_default = "png"
+                ))
+            ),
+            col_width = c(6, 6)
         )
     )
 }
@@ -167,6 +182,14 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             id = "dimplot",
             srt,
             dataname = dataname
+        )
+
+        modServer_SeuratVlnPlot(
+            id = "vlnplot_celltype",
+            srt = srt,
+            dataname = dataname,
+            groupby_column = "CellSubtype",
+            splitby_column = "CellType"
         )
 
         modServer_SeuratImageDimPlot(

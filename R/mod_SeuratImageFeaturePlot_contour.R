@@ -1,19 +1,23 @@
 modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500, format_default = "png", allow_download = TRUE) {
     ns <- NS(id)
     sigma_label <- tags$span(
+        class = "hover-hint",
+        tabindex = "0",
         "Sigma:",
-        title = "Kernel bandwidth for density estimation; larger values yield smoother contours."
+        `data-hint` = "Kernel bandwidth for density estimation; larger values yield smoother contours."
     )
     threshold_label <- tags$span(
+        class = "hover-hint",
+        tabindex = "0",
         "Threshold:",
-        title = "Quantile cutoff for contour values; only the top fraction is plotted."
+        `data-hint` = "Quantile cutoff for contour values; only the top fraction is plotted."
     )
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
-            numericInput(ns("size_perInch"), "µm per inch", value = size_perInch_default, min = 1),
-            inlineInput("Plot width:", numericInput(ns("width"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-            inlineInput("Plot height:", numericInput(ns("height"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "90px"),
+            inlineInput("µm per inch:", numericInput(ns("size_perInch"), NULL, value = size_perInch_default, min = 1, step = 1, width = 70), label_width = "100px"),
+            inlineInput("Plot width:", numericInput(ns("width"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
+            inlineInput("Plot height:", numericInput(ns("height"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
+            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "100px"),
             downloadButton(ns("plot_image_download"), "Download")
         )
     } else {
@@ -47,7 +51,7 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
                     choices = c("bottomright", "bottomleft", "topright", "topleft"),
                     selected = NULL
                 ),
-                bslib::input_switch(ns("groupby"), "Color by CellSubtype", value = TRUE)
+                bslib::input_switch(ns("groupby"), "CellSubtype color", value = TRUE)
             ),
             download_panel,
             open = "always"

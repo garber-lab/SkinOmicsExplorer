@@ -2,10 +2,10 @@ modUI_SeuratImageDimPlot <- function(id, size_perInch_default = 500, format_defa
     ns <- NS(id)
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
-            numericInput(ns("size_perInch"), "µm per inch", value = size_perInch_default, min = 1),
-            inlineInput("Plot width:", numericInput(ns("width"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-            inlineInput("Plot height:", numericInput(ns("height"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "90px"),
-            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "90px"),
+            inlineInput("µm per inch:", numericInput(ns("size_perInch"), NULL, value = size_perInch_default, min = 1, step = 1, width = 70), label_width = "100px"),
+            inlineInput("Plot width:", numericInput(ns("width"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
+            inlineInput("Plot height:", numericInput(ns("height"), NULL, value = 6, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
+            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "100px"),
             downloadButton(ns("plot_image_download"), "Download")
         )
     } else {

@@ -73,6 +73,49 @@
   --_padding: 1rem;
 }
 
+.hover-hint {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.hover-hint::after {
+  content: attr(data-hint);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: #222;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  max-width: 260px;
+  width: max-content;
+  white-space: normal;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.hover-hint:hover::after,
+.hover-hint:focus::after,
+.hover-hint:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hover-hint:focus-visible {
+  outline: 2px solid #555;
+  outline-offset: 2px;
+}
+
 
 
 
@@ -83,6 +126,4 @@
   --bslib-spacer: 1rem;
 }
 #### other settings (end) #### */
-
-
 
