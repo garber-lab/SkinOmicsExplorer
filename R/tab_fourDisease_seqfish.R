@@ -3,31 +3,18 @@ tabUI_fourDisease_seqfish <- function(id) {
     tagList(
         layout_columns(
             bslib::card(
-                class = "mb-3",
-                bslib::card_body(
-                    tags$div(
-                        tags$h5("Abbreviations"),
-                        tags$p(tags$strong("Disease types:")),
-                        tags$ul(
-                            tags$li("DM - Dermatomyositis"),
-                            tags$li("CLE - Cutaneous Lupus Erythematosus"),
-                            tags$li("Pso - Psoriasis"),
-                            tags$li("Vit - Vitiligo")
-                        ),
-                        tags$h5("Abbreviations"),
-                        tags$ul(
-                            tags$li("DM - UV109, UV253"),
-                            tags$li("CLE - UV243, UV260"),
-                            tags$li("Pso - UV238, UV239"),
-                            tags$li("Vit - VB268")
-                        )
-                    )
-                )
-            ),
-            bslib::card(
                 bslib::card_header("Seurat Embedding Plot"),
                 bslib::card_body(modUI_SeuratEmbeddingPlot(
                     ns("dimplot"),
+                    width_default = 6,
+                    height_default = 6,
+                    format_default = "png"
+                ))
+            ),
+            bslib::card(
+                bslib::card_header("Seurat Feature Plot"),
+                bslib::card_body(modUI_SeuratFeaturePlot(
+                    ns("featureplot"),
                     width_default = 6,
                     height_default = 6,
                     format_default = "png"
@@ -181,6 +168,12 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt,
+            dataname = dataname
+        )
+
+        modServer_SeuratFeaturePlot(
+            id = "featureplot",
+            srt = srt,
             dataname = dataname
         )
 

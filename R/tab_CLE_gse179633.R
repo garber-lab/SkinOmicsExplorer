@@ -3,28 +3,18 @@ tabUI_CLE_gse179633 <- function(id){
     tagList(
         layout_columns(
             bslib::card(
-                class = "mb-3",
-                bslib::card_body(
-                    tags$div(
-                        tags$h5("Abbreviations"),
-                        tags$p(tags$strong("Disease types:")),
-                        tags$ul(
-                            tags$li("HC - Healthy Control"),
-                            tags$li("DLE - Discoid Lupus Erythematosus"),
-                            tags$li("SLE - Systemic lupus erythematosus")
-                        ),
-                        tags$p(tags$strong("Tissue type:")),
-                        tags$ul(
-                            tags$li("E - Epidermis"),
-                            tags$li("D - Dermis")
-                        )
-                    )
-                )
-            ),
-            bslib::card(
                 bslib::card_header("Seurat Embedding Plot"),
                 bslib::card_body(modUI_SeuratEmbeddingPlot(
                     ns("dimplot"),
+                    width_default = 6,
+                    height_default = 6,
+                    format_default = "png"
+                ))
+            ),
+            bslib::card(
+                bslib::card_header("Seurat Feature Plot"),
+                bslib::card_body(modUI_SeuratFeaturePlot(
+                    ns("featureplot"),
                     width_default = 6,
                     height_default = 6,
                     format_default = "png"
@@ -105,6 +95,12 @@ tabServer_CLE_gse179633 <- function(id, data_path){
 
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
+            srt = srt,
+            dataname = dataname
+        )
+
+        modServer_SeuratFeaturePlot(
+            id = "featureplot",
             srt = srt,
             dataname = dataname
         )
