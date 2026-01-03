@@ -25,7 +25,8 @@ modUI_SeuratImageDimPlot <- function(id, size_perInch_default = 500, format_defa
                     choices = c("bottomright", "bottomleft", "topright", "topleft"),
                     selected = NULL
                 ),
-                bslib::input_switch(ns("legend"), "Show legend", value = F)
+                bslib::input_switch(ns("legend"), "Show legend", value = F),
+                bslib::input_switch(ns("concise_legend"), "Concise legend", value = TRUE)
             ),
             wellPanel(
                 tags$strong("Cell point options"),
@@ -103,7 +104,9 @@ modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, 
                     new_width <- round(fov_dims[["width"]] / input$size_perInch, 2)
                     new_height <- round(fov_dims[["height"]] / input$size_perInch, 2)
                     # Add 1 inch for legend if shown
-                    if (isTRUE(input$legend)) {
+                    if (isTRUE(input$legend) && isTRUE(input$concise.legend)) {
+                        new_width <- new_width + 1
+                    } else if (isTRUE(input$legend) && isFALSE(input$concise.legend)) {
                         new_width <- new_width + 3
                     }
                     updateNumericInput(session, "width", value = new_width)
@@ -156,6 +159,7 @@ modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, 
                 size = input$size,
                 highlight.groups = highlight_groups,
                 highlight.size = input$highlight_size,
+                concise.legend = input$concise_legend,
                 scalebar.length = if (isTRUE(input$scalebar)) scalebar_length else NULL,
                 scalebar.numConv = scalebar_numConv,
                 scalebar.unit = scalebar_unit,
