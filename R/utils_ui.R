@@ -601,3 +601,144 @@ ImageFeaturePlot.ssc <- function(object, features, fov = NULL, assay = NULL, col
   
   return(plots)
 }
+
+
+
+
+
+
+
+
+
+library(spatstat.geom)
+library(spatstat.explore)
+library(dplyr)
+library(ggplot2)
+library(viridisLite)  # for palettes if needed
+ImageFeaturePlot.contour <- function(object, feature, fov, assay = NULL,
+                                     plot.all = T, group.by = NULL, size = 0.1, cols = NULL, alpha = 0.5,
+                                     sigma = NULL, n_levels = 6, color_palette = NULL, threshold = 0.9, contour.alpha = 0.7,
+                                     dark.background = T, scalebar.length = NULL, scalebar.numConv = 1,
+                                     scalebar.unit = NULL, scalebar.position = "bottomright", scalebar.color = NULL,
+                                     scalebar.text.size = 3, scalebar.margin = 0.03){
+  
+  if (is.null(assay)){
+    assay <- DefaultAssay(object)
+  }
+
+  df <- getCoords.cell(object, fov = fov)
+  df$expr <- object@assays[[assay]]@layers$data[rownames(object) == feature, match(rownames(df), colnames(object)), drop = TRUE]
+  
+  if (!is.null(group.by)){
+    df$group.by <- object@meta.data[,group.by]
+  }
+
+  if (!is.null(scalebar.length)) {
+    if (!is.numeric(scalebar.length) || length(scalebar.length) != 1 || scalebar.length <= 0) {
+      stop("scalebar.length must be a positive numeric value.")
+    }
+  }
+
+  plot_xlim <- range(df$x, na.rm = TRUE)
+  plot_ylim <- range(df$y, na.rm = TRUE)
+  
+  # 1. Define observation window (rectangle; replace with polygon mask if you have tissue boundary)
+  win <- owin(range(df$x), range(df$y))
+  
+  # 2. Point pattern with marks = expression
+  pp <- ppp(df$x, df$y, window = win, marks = df$expr)
+  
+  # 3. Choose bandwidth (sigma). Automatic selectors often oversmooth / undersmooth for sparse genes.
+    # or set manually, e.g. sigma <- 40  (in your spatial units)
+  sigma <- sigma %||% bw.diggle(pp)
+  
+  # 4a. Local transcript *sum* surface (kernel-weighted)
+  sum_surface <- density(pp, weights = pp$marks, sigma = sigma, at = "pixels", edge=TRUE)
+  # units: (sum of expression) / area
+  
+  df_sum  <- as.data.frame(sum_surface)  # columns: x, y, value
+  
+  # only plot the top n% of the values
+  thr <- quantile(df_sum$value, threshold, na.rm=TRUE)
+  maxv <- max(df_sum$value, na.rm=TRUE)
+  breaks <- seq(thr, maxv, length.out = n_levels + 1)
+  
+  g <- ggplot() + theme_void()
+  
+  if (plot.all){
+    if (is.null(group.by)){
+      g <- g + geom_point(data = df, aes(x, y), color="grey", size=size, alpha = alpha)
+    }else{
+      g <- g + geom_point(data = df, aes(x, y, col = group.by), size=size, alpha = alpha) + NoLegend()
+      if (!is.null(cols)){
+        g <- g + scale_color_manual(values = cols, drop = FALSE)
+      }
+    }
+  }
+  
+  g <- g + geom_contour_filled(data = df_sum, aes(x=x, y=y, z = value), alpha = contour.alpha, breaks = breaks)
+
+  if (dark.background){
+    g <- g + theme(panel.background = element_rect(fill = "black", color = "black"))
+    color_palette = color_palette %||% c("#3B0047","#D700FF")
+  }else{
+    color_palette = color_palette %||% c("#F7E7E6","red")
+  }
+  g <- g + scale_fill_manual(
+    values = colorRampPalette(color_palette)(length(breaks) - 1),
+    name = paste0("value ≥ ", signif(thr,3)),
+    drop = FALSE)
+
+  if (!is.null(scalebar.length)) {
+    span_x <- diff(plot_xlim)
+    span_y <- diff(plot_ylim)
+    margin <- max(scalebar.margin, 0)
+    margin_x <- span_x * margin
+    margin_y <- span_y * margin
+    offset_y <- if (span_y > 0) span_y * 0.02 else span_x * 0.02
+    bar_colour <- if (is.null(scalebar.color)) {
+      if (isTRUE(dark.background)) "white" else "black"
+    } else {
+      scalebar.color
+    }
+
+    if (is.character(scalebar.position)) {
+      pos <- match.arg(scalebar.position, c("bottomright", "bottomleft", "topright", "topleft"))
+      if (scalebar.length > span_x) {
+        warning("scalebar.length exceeds the x-range of the plot and may be clipped.", call. = FALSE)
+      }
+
+      from_left <- grepl("left", pos)
+      from_bottom <- grepl("bottom", pos)
+
+      x_start <- if (from_left) plot_xlim[1] + margin_x else plot_xlim[2] - margin_x - scalebar.length
+      y_start <- if (from_bottom) plot_ylim[1] + margin_y else plot_ylim[2] - margin_y
+      label_y <- if (from_bottom) y_start + offset_y else y_start - offset_y
+      text_vjust <- if (from_bottom) 0 else 1
+    } else if (is.numeric(scalebar.position) && length(scalebar.position) == 2) {
+      x_start <- scalebar.position[1]
+      y_start <- scalebar.position[2]
+      label_y <- y_start + offset_y
+      text_vjust <- 0
+    } else {
+      stop("scalebar.position must be 'bottomright', 'bottomleft', 'topright', 'topleft', or a numeric length-2 vector.")
+    }
+
+    x_end <- x_start + scalebar.length
+    scalebar.label <- round(scalebar.length * scalebar.numConv, digits = 2)
+    label <- if (is.null(scalebar.unit) || scalebar.unit == "") {
+      scalebar.label
+    } else {
+      paste(scalebar.label, scalebar.unit)
+    }
+
+    g <- g +
+      annotate("segment", x = x_start, xend = x_end, y = y_start, yend = y_start, colour = bar_colour, linewidth = 0.5) +
+      annotate("text", x = (x_start + x_end) / 2, y = label_y, label = label, colour = bar_colour, size = scalebar.text.size, vjust = text_vjust)
+  }
+  
+  g <- g + coord_equal() # coord_fixed()
+  
+  return(g)
+  
+}

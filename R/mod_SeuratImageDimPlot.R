@@ -25,7 +25,7 @@ modUI_SeuratImageDimPlot <- function(id, size_perInch_default = 500, format_defa
                     choices = c("bottomright", "bottomleft", "topright", "topleft"),
                     selected = NULL
                 ),
-                bslib::input_switch(ns("legend"), "Show legend", value = F),
+                bslib::input_switch(ns("legend"), "Show legend", value = T),
                 bslib::input_switch(ns("legend_concise"), "Concise legend", value = TRUE)
             ),
             wellPanel(

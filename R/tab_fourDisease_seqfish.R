@@ -50,6 +50,14 @@ tabUI_fourDisease_seqfish <- function(id) {
                 size_perInch_default = 500, # um per inch
                 format_default = "png"
             ))
+        ),
+        bslib::card(
+            bslib::card_header("Spatial feature Plot (contour)"),
+            bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
+                ns("image_featureplot_contour"),
+                size_perInch_default = 500, # um per inch
+                format_default = "png"
+            ))
         )
     )
 }
@@ -179,6 +187,19 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             id = "image_featureplot",
             srt = srt,
             dataname = dataname,
+            fov_choices = NULL,
+            scalebar_length = 4854.369,
+            scalebar_numConv = 0.103,
+            scalebar_unit = "μm",
+            scalebar_position_default = fov.scalebar.position,
+            fov.size = fov.sizes.um
+        )
+
+        modServer_SeuratImageFeaturePlot_contour(
+            id = "image_featureplot_contour",
+            srt = srt,
+            dataname = dataname,
+            colors.celltype = colors.celltype,
             fov_choices = NULL,
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
