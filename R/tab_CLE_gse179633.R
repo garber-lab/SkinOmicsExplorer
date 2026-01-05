@@ -50,7 +50,7 @@ tabUI_CLE_gse179633 <- function(id){
             bslib::card(
                 bslib::card_header("Heatmap for pseudo-bulked gene expression"),
                 bslib::card_body(
-                    modUI_PseudoBulkHeatmap(
+                    modUI_PseudoBulkHeatmap_bin(
                         ns("pseudoBulk_heatmap"),
                         width_default = 6,
                         height_default = 10,
@@ -123,7 +123,7 @@ tabServer_CLE_gse179633 <- function(id, data_path){
             subsetby_columns = c("CellType")
         )
         
-        modServer_PseudoBulkHeatmap(
+        modServer_PseudoBulkHeatmap_bin(
             id = "pseudoBulk_heatmap",
             bulk_tb = bulk_tb,
             bulk_meta = bulk_meta,

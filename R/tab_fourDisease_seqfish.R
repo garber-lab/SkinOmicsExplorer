@@ -35,6 +35,18 @@ tabUI_fourDisease_seqfish <- function(id) {
             )
         ),
         bslib::card(
+            bslib::card_header("Heatmap for pseudo-bulked gene expression in cell types"),
+            bslib::card_body(
+                modUI_PseudoBulkHeatmap_bin(
+                    ns("pseudoBulk_heatmap"),
+                    width_default = 16,
+                    height_default = 6,
+                    format_default = "pdf",
+                    allow_subset = TRUE
+                )
+            )
+        ),
+        bslib::card(
             bslib::card_header("Spatial embedding Plot"),
             bslib::card_body(modUI_SeuratImageDimPlot(
                 ns("image_dimplot"),
@@ -75,6 +87,19 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
 
             obj <- readRDS(paste0(data_path(), "fourDisease_seqfish/fourDisease_seqfish_seuratObject_shiny.rds"))
             return(obj)
+        })
+
+        bulk_tb <- reactive({
+            tb <- readRDS(paste0(data_path(), "fourDisease_seqfish/fourDisease_seqfish_pseudobulk_sum_subCellType.pub3.1.MCCD14_CellType.pub3_Disease_Patient_bin30.rds"))
+            return(tb)
+        })
+
+        bulk_meta <- reactive({
+            df <- do.call(rbind, strsplit(colnames(bulk_tb()), ":"))
+            df <- as.data.frame(df)
+            colnames(df) <- c("CellSubtype", "CellType", "Disease", "Patient")
+            rownames(df) <- colnames(bulk_tb())
+            return(df)
         })
 
         fov.sizes.um <- list(
@@ -222,6 +247,16 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             scalebar_unit = "μm",
             scalebar_position_default = fov.scalebar.position,
             fov.size = fov.sizes.um
+        )
+
+        modServer_PseudoBulkHeatmap_bin(
+            id = "pseudoBulk_heatmap",
+            bulk_tb = bulk_tb,
+            bulk_meta = bulk_meta,
+            dataname = dataname,
+            groupby_column = "CellSubtype",
+            splitby_column = "CellType",
+            subsetby_columns = c("Disease")
         )
     })
 }

@@ -206,7 +206,7 @@ VlnPlot.xlabel <- function(
 
 
 
-HeatmapPseodoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
+HeatmapPseudoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
   if (!is.null(genes)) {
     tb <- tb[genes, ]
   }
@@ -257,6 +257,217 @@ HeatmapPseodoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, clu
 # groupby <- "Skin"
 # splitby <- "Disease"
 # splitby <- NULL
+
+
+
+
+
+# this is similar to HeatmapPseudoBulk but add binned cell types on the left side
+HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
+  if (!is.null(genes)) {
+    genes <- intersect(genes, rownames(tb))
+    tb <- tb[genes, , drop = FALSE]
+  }
+
+  align_md <-  function(md, cols) {
+    if (!is.null(rownames(md)) && all(cols %in% rownames(md))) {
+      return(md[cols, , drop = FALSE])
+    }
+    if ("colName" %in% colnames(md) && all(cols %in% md$colName)) {
+      md_aligned <- md[match(cols, md$colName), , drop = FALSE]
+      rownames(md_aligned) <- md_aligned$colName
+      return(md_aligned)
+    }
+    if (nrow(md) == length(cols)) {
+      md_aligned <- md
+      rownames(md_aligned) <- cols
+      return(md_aligned)
+    }
+    stop("md must have rownames or a colName column matching tb column names.")
+  }
+
+  md <- align_md(md, colnames(tb))
+
+  group_cols <- c(groupby, splitby)
+  group_cols <- group_cols[!is.null(group_cols)]
+  if (length(group_cols) == 0) {
+    stop("groupby must be provided.")
+  }
+  missing_cols <- setdiff(group_cols, colnames(md))
+  if (length(missing_cols) > 0) {
+    stop("groupby/splitby not found in md: ", paste(missing_cols, collapse = ", "))
+  }
+
+  df <- md[, group_cols, drop = FALSE]
+  key_parts <- lapply(df, function(x) as.character(x))
+  key <- do.call(paste, c(key_parts, sep = ":"))
+
+  agg_tb <- t(rowsum(t(tb), group = key, reorder = FALSE))
+
+  key_order <- colnames(agg_tb)
+  idx <- match(key_order, key)
+  agg_md <- df[idx, , drop = FALSE]
+  rownames(agg_md) <- key_order
+  for (col in group_cols) {
+    if (is.factor(md[[col]])) {
+      agg_md[[col]] <- factor(as.character(agg_md[[col]]), levels = levels(md[[col]]))
+    }
+  }
+
+  col_sums <- colSums(agg_tb)
+  safe_sums <- ifelse(col_sums == 0, NA, col_sums)
+  agg_tb_norm <- sweep(agg_tb, 2, safe_sums, "/") * 1e6
+  agg_tb_norm[, is.na(safe_sums)] <- 0
+
+  bin_pattern <- "_bin[0-9]+$"
+  group_vals <- agg_md[[groupby]]
+  group_chr <- as.character(group_vals)
+  is_bin <- grepl(bin_pattern, group_chr)
+
+  bin_groups <- list()
+  if (any(is_bin)) {
+    bin_cols <- colnames(agg_tb_norm)[is_bin]
+    bin_base <- sub(bin_pattern, "", group_chr[is_bin])
+    bin_index <- as.integer(sub("^.*_bin", "", group_chr[is_bin]))
+    bin_info <- data.frame(
+      col = bin_cols,
+      base = bin_base,
+      bin = bin_index,
+      stringsAsFactors = FALSE
+    )
+    if (!is.null(splitby) && splitby %in% colnames(agg_md)) {
+      split_vals <- agg_md[bin_cols, splitby]
+      if (is.factor(split_vals)) {
+        bin_info$split_rank <- as.integer(split_vals)
+      } else {
+        split_chr <- as.character(split_vals)
+        bin_info$split_rank <- match(split_chr, unique(split_chr))
+      }
+    } else {
+      bin_info$split_rank <- 1
+    }
+
+    if (is.factor(group_vals)) {
+      level_pos <- match(group_chr, levels(group_vals))
+      base_order <- tapply(level_pos[is_bin], bin_base, min)
+      base_levels <- names(sort(base_order))
+    } else {
+      base_levels <- unique(bin_base)
+    }
+
+    bin_groups <- lapply(base_levels, function(ct) {
+      info <- bin_info[bin_info$base == ct, , drop = FALSE]
+      info <- info[order(info$bin, info$split_rank), , drop = FALSE]
+      info$col
+    })
+    names(bin_groups) <- base_levels
+  }
+
+  other_cols <- colnames(agg_tb_norm)[!is_bin]
+  if (length(other_cols) > 0) {
+    other_md <- agg_md[other_cols, , drop = FALSE]
+    if (is.factor(other_md[[groupby]])) {
+      group_rank <- as.integer(other_md[[groupby]])
+    } else {
+      group_chr_other <- as.character(other_md[[groupby]])
+      group_rank <- match(group_chr_other, unique(group_chr_other))
+    }
+    if (!is.null(splitby) && splitby %in% colnames(other_md)) {
+      if (is.factor(other_md[[splitby]])) {
+        split_rank <- as.integer(other_md[[splitby]])
+      } else {
+        split_chr <- as.character(other_md[[splitby]])
+        split_rank <- match(split_chr, unique(split_chr))
+      }
+    } else {
+      split_rank <- 1
+    }
+    other_cols <- other_cols[order(group_rank, split_rank)]
+  }
+
+  ordered_cols <- c(unlist(bin_groups, use.names = FALSE), other_cols)
+  if (length(ordered_cols) == 0) {
+    stop("No columns available for heatmap.")
+  }
+
+  df_hmap <- agg_tb_norm[, ordered_cols, drop = FALSE]
+  mat_scaled <- t(scale(t(df_hmap)))
+
+  all_values <- as.vector(mat_scaled)
+  col_fun <- circlize::colorRamp2(
+    breaks = c(min(all_values, na.rm = TRUE), mean(all_values, na.rm = TRUE), max(all_values, na.rm = TRUE)),
+    colors = c("blue", "white", "red")
+  )
+
+  heatmaps <- list()
+  show_rows <- TRUE
+  if (length(bin_groups) > 0) {
+    for (i in seq_along(bin_groups)) {
+      cols <- bin_groups[[i]]
+      bin_mat <- mat_scaled[, cols, drop = FALSE]
+      hmap <- ComplexHeatmap::Heatmap(
+        bin_mat,
+        name = "Expression",
+        col = col_fun,
+        cluster_rows = cluster_genes,
+        cluster_columns = FALSE,
+        show_row_names = show_rows,
+        show_column_names = FALSE,
+        show_row_dend = FALSE,
+        row_names_side = "left",
+        column_title = names(bin_groups)[i],
+        width = grid::unit(2, "cm")
+      )
+      heatmaps[[length(heatmaps) + 1]] <- hmap
+      show_rows <- FALSE
+    }
+  }
+
+  if (length(other_cols) > 0) {
+    other_mat <- mat_scaled[, other_cols, drop = FALSE]
+    colnames(other_mat) <- as.character(agg_md[other_cols, groupby])
+    col_splitby <- NULL
+    if (!is.null(splitby) && splitby %in% colnames(agg_md)) {
+      col_splitby <- agg_md[other_cols, splitby]
+      if (is.factor(col_splitby)) {
+        col_splitby <- droplevels(col_splitby)
+      }
+    }
+    hmap_others <- ComplexHeatmap::Heatmap(
+      other_mat,
+      name = "Expression",
+      col = col_fun,
+      cluster_rows = cluster_genes,
+      cluster_columns = FALSE,
+      show_row_names = show_rows,
+      show_column_names = TRUE,
+      show_row_dend = FALSE,
+      show_column_dend = FALSE,
+      row_names_side = "left",
+      column_split = col_splitby
+    )
+    heatmaps[[length(heatmaps) + 1]] <- hmap_others
+  }
+
+  if (length(heatmaps) == 1) {
+    return(heatmaps[[1]])
+  }
+  Reduce(`+`, heatmaps)
+}
+# tb <- readRDS('/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds')
+# md <- as.data.frame(do.call(rbind, strsplit(colnames(tb), ":")))
+# colnames(md) <- c("CellType","Disease","Skin")
+# md$colName <- colnames(tb)
+# md$Disease <- factor(md$Disease, levels=c("HC","DM","CLE","Pso","Vit"))
+# md$CellType <- factor(md$CellType, levels = c("MC","Lymph","KC","Mel"))
+# md$Skin <- factor(md$Skin, levels = c("H","NL","L"))
+
+# groupby <- "Skin"
+# splitby <- "Disease"
+# splitby <- NULL
+
+
+
 
 
 
