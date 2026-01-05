@@ -10,3 +10,7 @@
 *.csv
 *.tsv
 .cache/
+node_modules/
+tmp/
+package-lock.json
+package.json
