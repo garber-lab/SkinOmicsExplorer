@@ -55,7 +55,8 @@ ui <- fluidPage(
     ),
     nav_menu(
       "bulk RNA-seq",
-      nav_panel("UV in vitro bulk RNA-seq", tabUI_UV_bulk("tab_UV_bulk"))
+      nav_panel("UV in vitro bulk RNA-seq (moDC)", tabUI_UV_bulk_moDC("tab_UV_bulk_moDC")),
+      nav_panel("UV in vitro bulk RNA-seq (FB)", tabUI_UV_bulk_FB("tab_UV_bulk_FB"))
     ),
     nav_spacer(),
     nav_panel("Abbreviations", tabUI_abbreviations("tab_abbreviation")),
@@ -81,7 +82,8 @@ server <- function(input, output, session) {
   tabServer_UV_olink("tab_UV_olink", data_path)
   tabServer_fourDisease_seqfish("tab_fourDisease_seqfish", data_path)
   tabServer_UV_seqfish("tab_UV_seqfish", data_path)
-  tabServer_UV_bulk("tab_UV_bulk", data_path)
+  tabServer_UV_bulk_moDC("tab_UV_bulk_moDC", data_path)
+  tabServer_UV_bulk_FB("tab_UV_bulk_FB", data_path)
   tabServer_abbreviations("tab_abbreviation", data_path)
   tabServer_dataAccess("tab_dataAccess", data_path)
   tabServer_contact("tab_contact", data_path)

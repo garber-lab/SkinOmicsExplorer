@@ -1,4 +1,4 @@
-modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500, format_default = "png", allow_download = TRUE) {
+modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500, format_default = "png", allow_download = TRUE, sigma_default = 400) {
     ns <- NS(id)
     sigma_label <- tags$span(
         class = "hover-hint",
@@ -37,7 +37,7 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
                 ),
                 inlineInput(
                     sigma_label,
-                    numericInput(ns("sigma"), NULL, value = 400, min = 1, step = 10, width = 80),
+                    numericInput(ns("sigma"), NULL, value = sigma_default, min = 1, step = 10, width = 80),
                     label_width = "90px"
                 ),
                 inlineInput(
@@ -62,6 +62,7 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
 
 
 modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.celltype, fov_choices = NULL,
+                                                     feature_default = NULL,
                                                      scalebar_length = NULL, scalebar_numConv = 1, scalebar_unit = NULL,
                                                      scalebar_position_default = NULL, fov.size = NULL) {
     moduleServer(id, function(input, output, session) {
@@ -70,7 +71,13 @@ modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.c
                 req(srt())
                 fovs <- if (!is.null(fov_choices)) fov_choices else names(srt()@images)
                 updateSelectInput(session, "fov", choices = fovs)
-                updateSelectInput(session, "feature", choices = rownames(srt()))
+                feature_choices <- rownames(srt())
+                feature_selected <- if (!is.null(feature_default) && feature_default %in% feature_choices) {
+                    feature_default
+                } else {
+                    NULL
+                }
+                updateSelectInput(session, "feature", choices = feature_choices, selected = feature_selected)
             },
             ignoreInit = FALSE
         )

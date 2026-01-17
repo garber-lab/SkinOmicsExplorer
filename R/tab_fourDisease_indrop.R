@@ -71,7 +71,7 @@ tabServer_fourDisease_indrop <- function(id, data_path){
         srt <- reactive({
             progress <- Progress$new(session, min=0, max=1)
             on.exit(progress$close())
-            progress$set(message = 'Reading Seurat Object', detail = 'about 20 seconds')
+            progress$set(message = 'Reading Seurat Object', detail = 'about 10 seconds')
 
             obj <- readRDS(paste0(data_path(), 'fourDisease_indrop/fourDisease_indrop_seuratObject.rds'))
             return(obj)
@@ -97,13 +97,16 @@ tabServer_fourDisease_indrop <- function(id, data_path){
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
+            groupby_default = "CellType",
             dataname = dataname
         )
 
         modServer_SeuratFeaturePlot(
             id = "featureplot",
             srt = srt,
-            dataname = dataname
+            dataname = dataname,
+            raster = FALSE,
+            feature_default = "IFNG"
         )
 
         modServer_SeuratVlnPlot(
@@ -112,7 +115,8 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             dataname = dataname,
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
-            subsetby_columns = c("Disease", "Skin")
+            subsetby_columns = c("Disease", "Skin"),
+            feature_default = "IFNG"
         )
 
         modServer_SeuratVlnPlot(
@@ -121,7 +125,8 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             dataname = dataname,
             groupby_column = "Skin",
             splitby_column = "Disease",
-            subsetby_columns = c("CellSubtype")
+            subsetby_columns = c("CellSubtype"),
+            feature_default = "IFNG"
         )
 
         modServer_PseudoBulkHeatmap(

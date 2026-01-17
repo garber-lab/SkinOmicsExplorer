@@ -34,6 +34,20 @@ tabUI_CLE_gse179633 <- function(id){
                 )
             )
         ),
+        bslib::card(
+            bslib::card_header("Heatmap for pseudo-bulked gene expression"),
+            bslib::card_body(
+                modUI_PseudoBulkHeatmap_bin(
+                    ns("pseudoBulk_heatmap2"),
+                    width_default = 6,
+                    height_default = 10,
+                    format_default = "pdf",
+                    allow_subset = TRUE,
+                    show_bins_toggle = TRUE,
+                    show_bins_label = "Show transition"
+                )
+            )
+        ),
         layout_columns(
             bslib::card(
                 bslib::card_header("Violin plot for normalized gene expression by disease and tissue type"),
@@ -71,38 +85,45 @@ tabServer_CLE_gse179633 <- function(id, data_path){
         srt <- reactive({
             progress <- Progress$new(session, min=0, max=1)
             on.exit(progress$close())
-            progress$set(message = "Reading Seurat Object", detail = 'about 20 seconds')
+            progress$set(message = "Reading Seurat Object", detail = 'about 10 seconds')
 
             obj <- readRDS(paste0(data_path(), 'CLE_gse179633/CLE_gse179633_seuratObject_shiny.rds'))
             return(obj)
         })
 
         bulk_tb <- reactive({
-            tb <- readRDS(paste0(data_path(), 'CLE_gse179633/shiny_hostingCLE_gse179633_pseudobulk_sum_CellType_CellSubtype_disease_tissueType.rds'))
+            tb <- readRDS(paste0(data_path(), 'CLE_gse179633/CLE_gse179633_pseudobulk_sum_CellSubtype_CellType_Disease_tissueType_bin30.rds'))
         })
-
         bulk_meta <- reactive({
             df <- as.data.frame(do.call(rbind, strsplit(colnames(bulk_tb()), ":")))
-            colnames(df) <- c("CellType","CellSubtype","Disease","tissueType")
-            obj <- srt()
-            df[, "CellType"] <- factor(df[,"CellType"], levels = levels(obj$CellType))
-            df[, "CellSubtype"] <- factor(df[,"CellSubtype"], levels = levels(obj$CellSubtype))
-            df[, "Disease"] <- factor(df[,"Disease"], levels = levels(obj$Disease))
-            df[, "tissueType"] <- factor(df[,"tissueType"], levels = levels(obj$tissueType))
+            colnames(df) <- c("CellSubtype","CellType","Disease","tissueType")
             rownames(df) <- colnames(bulk_tb())
+            bin_pattern <- "_bin[0-9]+$"
+            has_bin <- grepl(bin_pattern, df$CellSubtype)
+            df$bin <- NA
+            df$bin[has_bin] <- sub("^.*_bin", "bin", df$CellSubtype[has_bin])
+            df$CellSubtype[has_bin] <- sub(bin_pattern, "", df$CellSubtype[has_bin])
+            obj <- srt()
+            df$CellSubtype <- factor(df$CellSubtype, levels = levels(obj$CellSubtype))
+            df$CellType <- factor(df$CellType, levels = levels(obj$CellType))
+            df$Disease <- factor(df$Disease, levels = levels(obj$Disease))
+            df$tissueType <- factor(df$tissueType, levels = levels(obj$tissueType))
             return(df)
         })
 
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
+            groupby_default = "CellType",
             dataname = dataname
         )
 
         modServer_SeuratFeaturePlot(
             id = "featureplot",
             srt = srt,
-            dataname = dataname
+            dataname = dataname,
+            raster = FALSE,
+            feature_default = "IFNG"
         )
 
         modServer_SeuratVlnPlot(
@@ -111,7 +132,19 @@ tabServer_CLE_gse179633 <- function(id, data_path){
             dataname = dataname,
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
-            subsetby_columns = c("Disease", "tissueType")
+            subsetby_columns = c("Disease", "tissueType"),
+            feature_default = "IFNG"
+        )
+
+        modServer_PseudoBulkHeatmap_bin(
+            id = "pseudoBulk_heatmap2",
+            bulk_tb = bulk_tb,
+            bulk_meta = bulk_meta,
+            dataname = dataname,
+            groupby_column = "CellSubtype",
+            splitby_column = "CellType",
+            subsetby_columns = c("Disease"),
+            show_bins_toggle = TRUE
         )
 
         modServer_SeuratVlnPlot(
@@ -120,7 +153,8 @@ tabServer_CLE_gse179633 <- function(id, data_path){
             dataname = dataname,
             groupby_column = "tissueType",
             splitby_column = "Disease",
-            subsetby_columns = c("CellType")
+            subsetby_columns = c("CellType"),
+            feature_default = "IFNG"
         )
         
         modServer_PseudoBulkHeatmap_bin(
@@ -128,9 +162,11 @@ tabServer_CLE_gse179633 <- function(id, data_path){
             bulk_tb = bulk_tb,
             bulk_meta = bulk_meta,
             dataname = dataname,
-            groupby_column = NULL,
-            splitby_column = NULL,
-            subsetby_columns = c("Disease","tissueType","CellType","CellSubtype")
+            groupby_column = "tissueType",
+            splitby_column = "Disease",
+            subsetby_columns = c("CellType"),
+            show_bins_default = FALSE,
+            show_bins_toggle = FALSE
         )
         invisible(list(srt = srt))
     })

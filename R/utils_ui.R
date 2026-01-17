@@ -19,6 +19,45 @@ inputGroup <- function(..., margin_bottom = 0) {
   )
 }
 
+manual_scale_values <- function(values, data_values) {
+  if (is.null(values)) {
+    return(values)
+  }
+  value_names <- names(values)
+  if (is.null(value_names) || all(value_names == "")) {
+    return(values)
+  }
+
+  data_levels <- if (is.factor(data_values)) {
+    levels(droplevels(data_values))
+  } else {
+    unique(as.character(data_values))
+  }
+  data_levels <- data_levels[!is.na(data_levels)]
+  if (length(data_levels) == 0) {
+    return(unname(values))
+  }
+
+  if (!any(data_levels %in% value_names)) {
+    if (length(values) == length(data_levels)) {
+      values <- stats::setNames(unname(values), data_levels)
+    } else {
+      values <- unname(values)
+    }
+  }
+
+  values
+}
+
+FetchData.compat <- function(object, vars, slot = NULL, ...) {
+  fetch_formals <- tryCatch(formals(FetchData), error = function(e) NULL)
+  if (!is.null(fetch_formals) && "layer" %in% names(fetch_formals)) {
+    FetchData(object = object, vars = vars, layer = slot, ...)
+  } else {
+    FetchData(object = object, vars = vars, slot = slot, ...)
+  }
+}
+
 
 test_ggplot <- function() {
   ggplot(data.frame(x = c(1, 2), y = c(2, 1))) +
@@ -52,7 +91,7 @@ VlnPlot.xlabel <- function(
   assay <- assay %||% DefaultAssay(object = object)
   DefaultAssay(object = object) <- assay
 
-  gene_exp <- FetchData(object = object, vars = gene, slot = slot)
+  gene_exp <- FetchData.compat(object = object, vars = gene, slot = slot)
   if (sum(gene_exp) == 0) {
     warning("No expression in data")
     return(invisible(NULL))
@@ -94,6 +133,7 @@ VlnPlot.xlabel <- function(
   g <- ggplot(df)
 
   if (!is.null(colors)) {
+    colors <- manual_scale_values(colors, df[[group.by]])
     g <- g + scale_color_manual(values = colors)
     g <- g + scale_fill_manual(values = colors)
   }
@@ -122,14 +162,14 @@ VlnPlot.xlabel <- function(
 
   if (isTRUE(jitter_pts)) {
     g <- g + geom_jitter(
-      aes_string(x = group.by, y = "plot", col = group.by),
+      aes(x = .data[[group.by]], y = .data[["plot"]], col = .data[[group.by]]),
       width = 0.2,
       size = size
     )
   }
 
   g <- g + geom_violin(
-    aes_string(x = group.by, y = "plot", fill = group.by),
+    aes(x = .data[[group.by]], y = .data[["plot"]], fill = .data[[group.by]]),
     colour = "black",
     trim = TRUE,
     scale = "width",
@@ -139,7 +179,7 @@ VlnPlot.xlabel <- function(
 
   if (isTRUE(number_labels)) {
     g <- g + stat_summary(
-      aes_string(x = group.by, y = "value"),
+      aes(x = .data[[group.by]], y = .data[["value"]]),
       fun.data = function(x) data.frame(y = -max(df$plot) / 25, label = length(x)),
       colour = "black",
       geom = "text",
@@ -147,7 +187,7 @@ VlnPlot.xlabel <- function(
     )
 
     g <- g + stat_summary(
-      aes_string(x = group.by, y = "value"),
+      aes(x = .data[[group.by]], y = .data[["value"]]),
       fun.data = function(x) data.frame(y = -max(df$plot) / 10, label = round(mean(as.numeric(x > 0)), sig)),
       colour = "black",
       geom = "text",
@@ -165,7 +205,7 @@ VlnPlot.xlabel <- function(
 
     if (is.finite(scale) && scale > 0) {
       g <- g + suppressWarnings(stat_summary(
-        aes_string(x = group.by, y = "value"),
+        aes(x = .data[[group.by]], y = .data[["value"]]),
         fun = function(x) mean(x) * (scale * 0.5),
         colour = "black",
         geom = "point",
@@ -206,43 +246,150 @@ VlnPlot.xlabel <- function(
 
 
 
-HeatmapPseudoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
+HeatmapPseudoBulk <- function(tb, md, genes = NULL, groupby, groupby.order = NULL, splitby = NULL, splitby.order = NULL, cluster_genes = FALSE) {
+  libsize <- colSums(tb)
   if (!is.null(genes)) {
-    tb <- tb[genes, ]
+    tb <- tb[genes, , drop = FALSE]
   }
-  # aggregate expression by groupby and splitby
-  df <- md[, c(groupby, splitby), drop = FALSE]
-  df$group <- apply(df, 1, function(x) paste0(x, collapse = ":"))
-  groups <- split(1:nrow(df), df$group)
-  agg_tb <- sapply(groups, function(idx) {
-    rowSums(tb[, idx, drop = FALSE])
-  })
-  agg_md <- as.data.frame(do.call(rbind, strsplit(colnames(agg_tb), ":")))
-  colnames(agg_md) <- c(groupby, splitby)
-  agg_md[, groupby] <- factor(agg_md[, groupby], levels = levels(md[, groupby]))
-  if (!is.null(splitby)) {
-    agg_md[, splitby] <- factor(agg_md[, splitby], levels = levels(md[, splitby]))
-  }
+  # aggregate expression by groupby and splitby (no bins)
+  group_cols <- c(groupby, splitby)
+  df <- md[, group_cols, drop = FALSE]
+  key <- apply(df, 1, paste0, collapse = ":")
 
-  if (!is.null(splitby)) {
-    col_splitby <- agg_md[, splitby]
-  } else {
-    col_splitby <- NULL
+  agg_tb <- t(rowsum(t(tb), group = key, reorder = FALSE))
+  agg_libsize <- rowsum(libsize, group = key, reorder = FALSE)[, 1]
+
+  agg_md <- df[match(colnames(agg_tb), key), , drop = FALSE]
+  rownames(agg_md) <- colnames(agg_tb)
+
+  if (!is.null(groupby.order)) {
+    agg_md[[groupby]] <- factor(agg_md[[groupby]], levels = groupby.order)
+  }
+  if (!is.null(splitby) && !is.null(splitby.order)) {
+    agg_md[[splitby]] <- factor(agg_md[[splitby]], levels = splitby.order)
   }
 
-  agg_tb_norm <- apply(agg_tb, 2, function(x) x / sum(x) * 1e6)
-  agg_tb_norm_scaled <- t(scale(t(agg_tb_norm)))
+  agg_tb_norm <- sweep(agg_tb, 2, agg_libsize, "/") * 1e6
 
-  hmap <- ComplexHeatmap::Heatmap(agg_tb_norm_scaled,
+  ordered_cols <- colnames(agg_tb_norm)
+  if (length(ordered_cols) > 0) {
+    if (is.factor(agg_md[[groupby]])) {
+      group_rank <- as.integer(agg_md[[groupby]])
+    } else {
+      group_rank <- as.integer(factor(agg_md[[groupby]]))
+    }
+
+    has_splitby <- !is.null(splitby) && splitby %in% colnames(agg_md)
+    if (has_splitby) {
+      if (is.factor(agg_md[[splitby]])) {
+        split_rank <- as.integer(agg_md[[splitby]])
+      } else {
+        split_rank <- as.integer(factor(agg_md[[splitby]]))
+      }
+      ordered_cols <- ordered_cols[order(group_rank, split_rank)]
+    } else {
+      ordered_cols <- ordered_cols[order(group_rank)]
+    }
+  }
+
+  mat_scaled <- t(scale(t(agg_tb_norm[, ordered_cols, drop = FALSE])))
+  colnames(mat_scaled) <- as.character(agg_md[ordered_cols, groupby])
+
+  col_splitby <- NULL
+  if (!is.null(splitby) && splitby %in% colnames(agg_md)) {
+    col_splitby <- agg_md[ordered_cols, splitby]
+    if (is.factor(col_splitby)) {
+      col_splitby <- droplevels(col_splitby)
+    }
+  }
+
+  col_fun <- circlize::colorRamp2(
+    breaks = c(-2, 0, 2),
+    colors = c("blue", "white", "red")
+  )
+
+  hmap <- ComplexHeatmap::Heatmap(
+    mat_scaled,
     name = "Expression",
+    col = col_fun,
     cluster_rows = cluster_genes,
     cluster_columns = FALSE,
     show_row_names = TRUE,
     show_column_names = TRUE,
     show_row_dend = FALSE,
+    show_column_dend = FALSE,
+    row_names_side = "left",
+    column_split = col_splitby
+  )
+  return(hmap)
+}
+
+HeatmapBulk <- function(tb_cpm, md, genes = NULL, groupby, groupby.order = NULL, splitby = NULL, splitby.order = NULL, cluster_genes = FALSE) {
+  if (!is.null(genes)) {
+    tb_cpm <- tb_cpm[genes, , drop = FALSE]
+  }
+
+  if (!is.null(groupby.order) && groupby %in% colnames(md)) {
+    md[[groupby]] <- factor(md[[groupby]], levels = groupby.order)
+  }
+  if (!is.null(splitby) && !is.null(splitby.order) && splitby %in% colnames(md)) {
+    md[[splitby]] <- factor(md[[splitby]], levels = splitby.order)
+  }
+
+  ordered_cols <- colnames(tb_cpm)
+  if (length(ordered_cols) > 0 && groupby %in% colnames(md)) {
+    if (is.factor(md[[groupby]])) {
+      group_rank <- as.integer(md[[groupby]])
+    } else {
+      group_rank <- as.integer(factor(md[[groupby]]))
+    }
+
+    has_splitby <- !is.null(splitby) && splitby %in% colnames(md)
+    if (has_splitby) {
+      if (is.factor(md[[splitby]])) {
+        split_rank <- as.integer(md[[splitby]])
+      } else {
+        split_rank <- as.integer(factor(md[[splitby]]))
+      }
+      ordered_cols <- ordered_cols[order(group_rank, split_rank)]
+    } else {
+      ordered_cols <- ordered_cols[order(group_rank)]
+    }
+  }
+
+  mat_scaled <- t(scale(t(tb_cpm[, ordered_cols, drop = FALSE])))
+  if (groupby %in% colnames(md)) {
+    colnames(mat_scaled) <- as.character(md[ordered_cols, groupby])
+  }
+
+  col_splitby <- NULL
+  if (!is.null(splitby) && splitby %in% colnames(md)) {
+    col_splitby <- md[ordered_cols, splitby]
+    if (is.factor(col_splitby)) {
+      col_splitby <- droplevels(col_splitby)
+    }
+  }
+
+  magma_colors <- viridis::magma(256)
+  col_fun <- circlize::colorRamp2(
+    breaks = seq(-2, 2, length.out = length(magma_colors)),
+    colors = magma_colors
+  )
+
+  hmap <- ComplexHeatmap::Heatmap(
+    mat_scaled,
+    name = "CPM",
+    col = col_fun,
+    cluster_rows = cluster_genes,
+    cluster_columns = FALSE,
+    show_row_names = TRUE,
+    show_column_names = FALSE,
+    show_row_dend = FALSE,
+    show_column_dend = FALSE,
     row_names_side = "left",
     column_split = col_splitby,
-    column_order = order(agg_md[, groupby])
+    column_title_side = "bottom",
+    column_title_gp = grid::gpar(fontsize = 8)
   )
   return(hmap)
 }
@@ -263,101 +410,125 @@ HeatmapPseudoBulk <- function(tb, md, genes = NULL, groupby, splitby = NULL, clu
 
 
 # this is similar to HeatmapPseudoBulk but add binned cell types on the left side
-HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, splitby = NULL, cluster_genes = FALSE) {
+HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, groupby.order = NULL, splitby = NULL, splitby.order = NULL, cluster_genes = FALSE, show_bins = TRUE) {
+  # colnames of tb and rownames of md should match
+  libsize <- colSums(tb)
   if (!is.null(genes)) {
-    genes <- intersect(genes, rownames(tb))
     tb <- tb[genes, , drop = FALSE]
   }
 
-  align_md <-  function(md, cols) {
-    if (!is.null(rownames(md)) && all(cols %in% rownames(md))) {
-      return(md[cols, , drop = FALSE])
+  bin_col <- NULL
+  if (isTRUE(show_bins) && "bin" %in% colnames(md)) {
+    bin_pattern <- "_bin[0-9]+$"
+    md_cols_no_bin <- setdiff(colnames(md), "bin")
+    groupby_idx <- match(groupby, md_cols_no_bin)
+    checked_groupby_parts <- FALSE
+    bin_active <- FALSE
+    if (!is.na(groupby_idx)) {
+      col_parts <- strsplit(colnames(tb), ":")
+      part_lengths <- vapply(col_parts, length, integer(1))
+      if (length(unique(part_lengths)) == 1) {
+        parts_mat <- do.call(rbind, col_parts)
+        if (ncol(parts_mat) == length(md_cols_no_bin)) {
+          checked_groupby_parts <- TRUE
+          bin_active <- any(grepl(bin_pattern, parts_mat[, groupby_idx]))
+        }
+      }
     }
-    if ("colName" %in% colnames(md) && all(cols %in% md$colName)) {
-      md_aligned <- md[match(cols, md$colName), , drop = FALSE]
-      rownames(md_aligned) <- md_aligned$colName
-      return(md_aligned)
+    if (!checked_groupby_parts) {
+      bin_vals <- md[["bin"]]
+      if (is.factor(bin_vals)) {
+        bin_vals <- as.character(bin_vals)
+      }
+      bin_active <- any(!is.na(bin_vals) & bin_vals != "")
     }
-    if (nrow(md) == length(cols)) {
-      md_aligned <- md
-      rownames(md_aligned) <- cols
-      return(md_aligned)
+    if (bin_active) {
+      bin_col <- "bin"
     }
-    stop("md must have rownames or a colName column matching tb column names.")
   }
 
-  md <- align_md(md, colnames(tb))
-
-  group_cols <- c(groupby, splitby)
-  group_cols <- group_cols[!is.null(group_cols)]
-  if (length(group_cols) == 0) {
-    stop("groupby must be provided.")
-  }
-  missing_cols <- setdiff(group_cols, colnames(md))
-  if (length(missing_cols) > 0) {
-    stop("groupby/splitby not found in md: ", paste(missing_cols, collapse = ", "))
-  }
-
+  group_cols <- c(groupby, bin_col, splitby)
   df <- md[, group_cols, drop = FALSE]
-  key_parts <- lapply(df, function(x) as.character(x))
-  key <- do.call(paste, c(key_parts, sep = ":"))
+  key <- apply(df, 1, paste0, collapse = ":")
 
   agg_tb <- t(rowsum(t(tb), group = key, reorder = FALSE))
+  agg_libsize <- rowsum(libsize, group = key, reorder = FALSE)[, 1]
 
-  key_order <- colnames(agg_tb)
-  idx <- match(key_order, key)
-  agg_md <- df[idx, , drop = FALSE]
-  rownames(agg_md) <- key_order
-  for (col in group_cols) {
-    if (is.factor(md[[col]])) {
-      agg_md[[col]] <- factor(as.character(agg_md[[col]]), levels = levels(md[[col]]))
-    }
+  agg_md <- df[match(colnames(agg_tb), key), , drop = FALSE]
+  rownames(agg_md) <- colnames(agg_tb)
+
+  has_bin <- !is.null(bin_col) && bin_col %in% colnames(agg_md)
+  bin_vals <- if (has_bin) agg_md[[bin_col]] else NULL
+  if (is.factor(bin_vals)) {
+    bin_vals <- as.character(bin_vals)
+  }
+  is_bin <- if (has_bin) !is.na(bin_vals) & bin_vals != "" else rep(FALSE, nrow(agg_md))
+
+  agg_tb_norm <- matrix(0, nrow = nrow(agg_tb), ncol = ncol(agg_tb), dimnames = dimnames(agg_tb))
+  if (any(!is_bin)) {
+    agg_tb_norm[, !is_bin] <- sweep(agg_tb[, !is_bin, drop = FALSE], 2, agg_libsize[!is_bin], "/") * 1e6
+  }
+  if (any(is_bin)) {
+    # Normalize bins together per condition, then scale by per-condition bin count.
+    cond_df <- agg_md[, setdiff(group_cols, bin_col), drop = FALSE]
+    cond_key <- apply(cond_df, 1, paste0, collapse = ":")
+    cond_key_bin <- cond_key[is_bin]
+
+    total_libsize_bin <- tapply(agg_libsize[is_bin], cond_key_bin, sum)
+    bin_counts <- tapply(agg_md[[bin_col]][is_bin], cond_key_bin, function(x) {
+      x <- if (is.factor(x)) as.character(x) else x
+      sum(!is.na(x) & x != "")
+    })
+
+    agg_tb_norm[, is_bin] <- sweep(agg_tb[, is_bin, drop = FALSE], 2, total_libsize_bin[cond_key_bin], "/") * 1e6
+    agg_tb_norm[, is_bin] <- sweep(agg_tb_norm[, is_bin, drop = FALSE], 2, bin_counts[cond_key_bin], "*")
   }
 
-  col_sums <- colSums(agg_tb)
-  safe_sums <- ifelse(col_sums == 0, NA, col_sums)
-  agg_tb_norm <- sweep(agg_tb, 2, safe_sums, "/") * 1e6
-  agg_tb_norm[, is.na(safe_sums)] <- 0
-
-  bin_pattern <- "_bin[0-9]+$"
-  group_vals <- agg_md[[groupby]]
-  group_chr <- as.character(group_vals)
-  is_bin <- grepl(bin_pattern, group_chr)
-
+  has_splitby <- !is.null(splitby) && splitby %in% colnames(agg_md)
   bin_groups <- list()
   if (any(is_bin)) {
-    bin_cols <- colnames(agg_tb_norm)[is_bin]
-    bin_base <- sub(bin_pattern, "", group_chr[is_bin])
-    bin_index <- as.integer(sub("^.*_bin", "", group_chr[is_bin]))
     bin_info <- data.frame(
-      col = bin_cols,
-      base = bin_base,
-      bin = bin_index,
+      col = colnames(agg_tb_norm)[is_bin],
+      base = as.character(agg_md[is_bin, groupby]),
+      bin = as.character(agg_md[is_bin, bin_col]),
       stringsAsFactors = FALSE
     )
-    if (!is.null(splitby) && splitby %in% colnames(agg_md)) {
-      split_vals <- agg_md[bin_cols, splitby]
-      if (is.factor(split_vals)) {
-        bin_info$split_rank <- as.integer(split_vals)
-      } else {
-        split_chr <- as.character(split_vals)
-        bin_info$split_rank <- match(split_chr, unique(split_chr))
-      }
-    } else {
-      bin_info$split_rank <- 1
+    if (has_splitby) {
+      bin_info$split <- as.character(agg_md[is_bin, splitby])
     }
 
-    if (is.factor(group_vals)) {
-      level_pos <- match(group_chr, levels(group_vals))
-      base_order <- tapply(level_pos[is_bin], bin_base, min)
-      base_levels <- names(sort(base_order))
+    base_levels <- if (is.factor(agg_md[[groupby]])) {
+      levels(agg_md[[groupby]])
     } else {
-      base_levels <- unique(bin_base)
+      unique(bin_info$base)
     }
+    base_levels <- base_levels[base_levels %in% bin_info$base]
+
+    bin_levels <- if (is.factor(agg_md[[bin_col]])) levels(agg_md[[bin_col]]) else NULL
+    split_levels <- if (has_splitby && is.factor(agg_md[[splitby]])) levels(agg_md[[splitby]]) else NULL
 
     bin_groups <- lapply(base_levels, function(ct) {
       info <- bin_info[bin_info$base == ct, , drop = FALSE]
-      info <- info[order(info$bin, info$split_rank), , drop = FALSE]
+      bin_rank <- if (!is.null(bin_levels)) {
+        match(info$bin, bin_levels)
+      } else {
+        bin_num <- suppressWarnings(as.integer(sub("^[^0-9]*", "", info$bin)))
+        if (all(!is.na(bin_num))) {
+          bin_num
+        } else {
+          as.integer(factor(info$bin, levels = unique(info$bin)))
+        }
+      }
+      if (has_splitby && "split" %in% colnames(info)) {
+        split_rank <- if (!is.null(split_levels)) {
+          match(info$split, split_levels)
+        } else {
+          as.integer(factor(info$split, levels = unique(info$split)))
+        }
+        info <- info[order(bin_rank, split_rank), , drop = FALSE]
+      } else {
+        info <- info[order(bin_rank), , drop = FALSE]
+      }
       info$col
     })
     names(bin_groups) <- base_levels
@@ -369,42 +540,39 @@ HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, splitby = NULL,
     if (is.factor(other_md[[groupby]])) {
       group_rank <- as.integer(other_md[[groupby]])
     } else {
-      group_chr_other <- as.character(other_md[[groupby]])
-      group_rank <- match(group_chr_other, unique(group_chr_other))
+      group_rank <- as.integer(factor(other_md[[groupby]]))
     }
-    if (!is.null(splitby) && splitby %in% colnames(other_md)) {
+
+    if (has_splitby) {
       if (is.factor(other_md[[splitby]])) {
         split_rank <- as.integer(other_md[[splitby]])
       } else {
-        split_chr <- as.character(other_md[[splitby]])
-        split_rank <- match(split_chr, unique(split_chr))
+        split_rank <- as.integer(factor(other_md[[splitby]]))
       }
+      other_cols <- other_cols[order(group_rank, split_rank)]
     } else {
-      split_rank <- 1
+      other_cols <- other_cols[order(group_rank)]
     }
-    other_cols <- other_cols[order(group_rank, split_rank)]
   }
 
   ordered_cols <- c(unlist(bin_groups, use.names = FALSE), other_cols)
-  if (length(ordered_cols) == 0) {
-    stop("No columns available for heatmap.")
-  }
+  mat_scaled <- t(scale(t(agg_tb_norm[, ordered_cols, drop = FALSE])))
 
-  df_hmap <- agg_tb_norm[, ordered_cols, drop = FALSE]
-  mat_scaled <- t(scale(t(df_hmap)))
-
-  all_values <- as.vector(mat_scaled)
   col_fun <- circlize::colorRamp2(
-    breaks = c(min(all_values, na.rm = TRUE), mean(all_values, na.rm = TRUE), max(all_values, na.rm = TRUE)),
+    breaks = c(-2, 0, 2),
     colors = c("blue", "white", "red")
   )
 
   heatmaps <- list()
+  roworder <- NULL
   show_rows <- TRUE
   if (length(bin_groups) > 0) {
     for (i in seq_along(bin_groups)) {
       cols <- bin_groups[[i]]
       bin_mat <- mat_scaled[, cols, drop = FALSE]
+      if (!is.null(roworder)) {
+        bin_mat <- bin_mat[roworder, , drop = FALSE]
+      }
       hmap <- ComplexHeatmap::Heatmap(
         bin_mat,
         name = "Expression",
@@ -419,19 +587,18 @@ HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, splitby = NULL,
         width = grid::unit(2, "cm")
       )
       heatmaps[[length(heatmaps) + 1]] <- hmap
+      roworder <- hmap@row_order
       show_rows <- FALSE
+      cluster_genes <- FALSE
     }
   }
 
   if (length(other_cols) > 0) {
     other_mat <- mat_scaled[, other_cols, drop = FALSE]
     colnames(other_mat) <- as.character(agg_md[other_cols, groupby])
-    col_splitby <- NULL
-    if (!is.null(splitby) && splitby %in% colnames(agg_md)) {
-      col_splitby <- agg_md[other_cols, splitby]
-      if (is.factor(col_splitby)) {
-        col_splitby <- droplevels(col_splitby)
-      }
+    col_splitby <- if (has_splitby) agg_md[other_cols, splitby] else NULL
+    if (is.factor(col_splitby)) {
+      col_splitby <- droplevels(col_splitby)
     }
     hmap_others <- ComplexHeatmap::Heatmap(
       other_mat,
@@ -544,7 +711,9 @@ ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size
   plot_ylim <- range(df$y, na.rm = TRUE)
 
   g <- ggplot(df) +
-    geom_point(aes_string(x = "x", y = "y", alpha = "highlight", size = "highlight", colour = group.by),
+    geom_point(aes(x = .data[["x"]], y = .data[["y"]],
+                   alpha = .data[["highlight"]], size = .data[["highlight"]],
+                   colour = .data[[group.by]]),
       shape = 16
     ) +
     theme_classic() +
@@ -588,6 +757,7 @@ ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size
     effective.cols[names(molecules.cols)] <- molecules.cols
   }
   if (!is.null(effective.cols)) {
+    effective.cols <- manual_scale_values(effective.cols, df[[group.by]])
     if (is.null(legend_breaks)) {
       g <- g + scale_color_manual(values = effective.cols)
     } else {
@@ -611,8 +781,6 @@ ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size
     plot_xlim <- crop[1:2]
     plot_ylim <- crop[3:4]
   }
-
-  g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
 
   if (dark.background) {
     g <- g + theme(panel.background = element_rect(fill = "black", colour = "black"))
@@ -671,7 +839,9 @@ ImageDimPlot.ssc <- function(object, fov, group.by = NULL, split.by = NULL, size
   }
 
   if (flip) {
-    g <- g + coord_flip()
+    g <- g + coord_flip(xlim = plot_xlim, ylim = plot_ylim)
+  } else {
+    g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
   }
 
   g
@@ -747,14 +917,14 @@ ImageFeaturePlot.ssc <- function(object, features, fov = NULL, assay = NULL, col
       plot_ylim <- crop[3:4]
     }
     
-    g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
+    if (isTRUE(coord.fixed)) {
+      g <- g + coord_fixed(ratio = 1, xlim = plot_xlim, ylim = plot_ylim)
+    } else {
+      g <- g + coord_cartesian(xlim = plot_xlim, ylim = plot_ylim)
+    }
     
     if (dark.background) {
       g <- g + theme(panel.background = element_rect(fill = "black", colour = "black"))
-    }
-    
-    if (coord.fixed) {
-      g <- g + coord_fixed(ratio = 1)
     }
     
     # Add scalebar if specified
@@ -884,6 +1054,7 @@ ImageFeaturePlot.contour <- function(object, feature, fov, assay = NULL,
     }else{
       g <- g + geom_point(data = df, aes(x, y, col = group.by), size=size, alpha = alpha) + NoLegend()
       if (!is.null(cols)){
+        cols <- manual_scale_values(cols, df$group.by)
         g <- g + scale_color_manual(values = cols, drop = FALSE)
       }
     }
@@ -954,4 +1125,362 @@ ImageFeaturePlot.contour <- function(object, feature, fov, assay = NULL,
   
   return(g)
   
+}
+
+
+
+
+
+
+
+#' 
+#'
+#' @description Boxplot to visualize NULISA data, with t-test supported. 
+#'
+#' @details NULISA has different sensitivity to each protein, values below which is meaningless. 
+#' Level of detection (LOD) is determined by the company. 
+#' Typically, mark the samples below LOD, and exclude them from t-test.
+#' 
+#' @param nls A table of NULISA output, with additional metadata column if needed.
+#' @param gene The gene of interest.
+#' @param group.by The variable to group the data by.
+#' @param group.color Optional. Colors for jitter points and boxplot. A named vector with colors as value and group elements as name.
+#' @param split.by Optional. The variable to split the data by.
+#' @param split.color Optional. Colors for split panel. A named vector with colors as value and split elements as name.
+#' @param lod.value The limit of detection value. Use the value in table if NULL.
+#' @param lod.mark Logical, indicating whether to mark values below LOD.
+#' @param lod.replaceValue Optional. The value to replace values below LOD with, or "lod" to replace by LOD value.
+#' @param lod.color The color for samples with value below LOD.
+#' @param lod.line Logical, indicating whether to plot a line for LOD.
+#' @param warn.mark Logical, indicating whether to mark values with WARN in SampleQC column.
+#' @param warn.shape The shape for samples with WARN in SampleQC column.
+#' @param ttest Logical, indicating whether to perform t-tests.
+#' @param ttest.ignoreLOD Logical, indicating whether to ignore LOD in t-tests.
+#' @param ttest.ignoreWARN Logical, indicating whether to ignore values with WARN sign in t-tests.
+#' @param ttest.ignoreSplit Logical, indicating whether to perform t-test in each split panel or for all comparisons
+#' @param plot.jitter Logical, indicating whether to plot jitter points.
+#' @param jitter.size The size of jitter points.
+#' @param jitter.stroke The thickness of jitter point borders. NA for no stroke.
+#' @param jitter.width The width of jitter points.
+#' @param plot.boxplot Logical, indicating whether to plot boxplot.
+#' @param boxplot.linewidth The width of lines in boxplot.
+#' @param plot.mean Logical, indicating whether to plot means.
+#' @param mean.ignoreLOD Logical, indicating whether to ignore LOD in calculating the mean.
+#' @param mean.ignoreWARN Logical, indicating whether to ignore values with WARN sign in calculating the mean
+#' @param mean.linewidth The width of lines for mean indicators.
+#' @param mean.color The color of mean indicators.
+#' @param mean.fatten The fatten factor for mean indicators.
+#' @param title The title of the plot.
+#' @param alpha The transparency level of elements.
+#' @param theme The theme to use for plotting.
+#' @examples
+#' BoxPlot.nulisa(nls=pd, gene="FGF23", group.by = "Skin", split.by = "Condition",
+#' group.color=colors.skin, split.color=colors.disease)
+#' BoxPlot.nulisa(nls=pd, gene="FGF23", group.by = "Skin", split.by = "Condition",
+#'                group.color=colors.skin, ttest = T)
+#' BoxPlot.nulisa(nls=pd[pd$Skin != "NonLesional",], gene="FGF23", group.by = "Condition",
+#'                group.color=colors.disease, ttest = T)
+#' @import scales ggplot2
+#' @export
+#'
+
+
+BoxPlot.nulisa <- function(nls, gene, 
+                           group.by, group.color=NULL,
+                           split.by=NULL, split.color=NULL,
+                           lod.value=NULL, lod.mark=T, lod.replaceValue=NULL, lod.color="grey", lod.line=T,
+                           warn.mark=T, warn.shape=17,
+                           ttest=T, ttest.ignoreLOD=T, ttest.ignoreWARN=T, ttest.ignoreSplit=F,
+                           plot.jitter=T, jitter.size=1, jitter.stroke=0.2, jitter.width=0.2,
+                           plot.boxplot=T, boxplot.linewidth=0.3,
+                           plot.mean=F, mean.ignoreLOD=T, mean.ignoreWARN=T, mean.linewidth=0.6, mean.color="red",mean.fatten=0.5,
+                           title="", alpha = 0.8, theme="bw"){
+  # subset data
+  df <- nls[nls$Target == gene,]
+  
+  # manage LOD
+  df$LOD[is.na(df$LOD)] <- 0
+  if (is.null(lod.value)) {
+    lod.value <- unique(df$LOD)
+    if (length(lod.value) > 1){
+      warning("More than one LOD value for the gene.")
+    }
+  }
+  df$lod.group <- ifelse(df$NPQ > df$LOD, "above", "below")
+  df$valueToPlot <- df$NPQ
+  if (!is.null(lod.replaceValue)){
+    if (lod.replaceValue == "lod"){
+      df$valueToPlot[df$lod.group == "below"] <- lod.value
+    }else{
+      df$valueToPlot[df$lod.group == "below"] <- lod.replaceValue
+    }
+  }
+  
+  # calculate mean
+  if (plot.mean){
+    df$valueForMean <- df$valueToPlot
+    if (mean.ignoreLOD){
+      df$valueForMean[df$lod.group == "below"] <- NA
+    }
+    if (mean.ignoreWARN){
+      df$valueForMean[df$SampleQC == "WARN"] <- NA
+    }
+    
+    if (is.null(split.by)){
+      df.mean <- df %>% group_by(.data[[group.by]]) %>%
+        summarise_at("valueForMean", .funs = "mean", na.rm=T)
+    }else{
+      df.mean <- df %>% group_by(.data[[group.by]], .data[[split.by]]) %>%
+        summarise_at("valueForMean", .funs = "mean", na.rm=T)
+    }
+  }
+  
+  # plot
+  g <- ggplot()
+  
+  if (is.null(warn.shape)){
+    shape.by <- NULL
+  }else{
+    shape.by <- "SampleQC"
+  }
+  
+  df$boxplot_group <- "y"
+  df$color_group <- df[[group.by]]
+  if (lod.mark){
+    levels(df$color_group) <- c(levels(df$color_group), "below")
+    df$color_group[df$lod.group == "below"] <- "below"
+    df$boxplot_group[df$lod.group == "below"] <- "n"
+  }
+  if (plot.jitter){
+    g <- g + geom_jitter(data = df, 
+                         mapping = aes(x=.data[[group.by]], y=valueToPlot, 
+                                       fill=color_group, shape=.data[[shape.by]]), 
+                         size=jitter.size, alpha=1, height=0,stroke=jitter.stroke,colour="black", 
+                         shape = 21, width = jitter.width)
+  }
+  if (plot.boxplot){
+    g <- g + geom_boxplot(data = df[df$boxplot_group == "y",], 
+                          mapping = aes(x=.data[[group.by]], y=valueToPlot, fill=.data[[group.by]]), 
+                          linewidth=boxplot.linewidth, alpha=alpha, color="black",outlier.shape = NA)
+  }
+  if (!(is.null(warn.shape))){
+    g <- g + scale_shape_manual(values = c('PASS' = 19, "WARN" = warn.shape))
+  }
+  
+  if (plot.mean){
+    g <- g + geom_crossbar(data = df.mean, mapping = aes(x=.data[[group.by]], y=valueForMean, ymin = valueForMean, ymax = valueForMean), width=mean.linewidth, color=mean.color, fatten = mean.fatten)
+  }
+  if (lod.line){
+    g <- g + geom_hline(yintercept = lod.value, linetype="dashed", color="grey")
+  }
+  if (!is.null(split.by)){
+    g <- g + facet_grid(reformulate(split.by), space = "free", scales = "free")
+  }
+  
+  if (is.null(group.color)){
+    group.color <- hue_pal()(length(levels(df[[group.by]])))
+    names(group.color) <- levels(df[[group.by]])
+  }
+  
+  group.color <- c(group.color, "below" = lod.color)
+  group.color <- manual_scale_values(group.color, df$color_group)
+  g <- g + scale_fill_manual(values = group.color) +
+    scale_color_manual(values = group.color)
+  
+  if (!is.null(title)){
+    g <- g + ggtitle(title)
+  }
+  if (!is.null(theme)){
+    g <- g + do.call(paste0("theme_",theme), args = list())
+  }
+  
+  if (!is.null(split.color)){
+    # cannot do t-test when coloring split panel
+    g2 <- ggplot_gtable(ggplot_build(g))
+    stripr <- which(grepl('strip-t', g2$layout$name))
+    fills <- c(split.color)
+    k <- 1
+    for (i in stripr) {
+      j <- which(grepl('rect', g2$grobs[[i]]$grobs[[1]]$childrenOrder))
+      g2$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+      k <- k+1
+    }
+    return(grid::grid.draw(g2))
+  }
+  
+  
+  
+  
+  if (ttest){
+    df.ttest <- df
+    if (ttest.ignoreLOD){
+      df.ttest <- df.ttest[df.ttest$lod.group == "above",]
+    }
+    if (ttest.ignoreWARN){
+      df.ttest <- df.ttest[df.ttest$SampleQC == "PASS",]
+    }
+    
+    list.ttest <- list()
+    if (is.null(split.by)){
+      #  t-test all
+      list.ttest[[1]] <- df.ttest
+    }else{
+      # plot split in multiple panels. Do t-test across groups with in each panel
+      list.ttest <- split(df.ttest, df.ttest[,split.by])
+    }
+    
+    ttestresult <- lapply(list.ttest, function(tb){
+      groups <- unique(as.character(tb[,group.by]))
+      if (length(groups) == 1){
+        return(NULL)
+      }
+      comparisons <- as.data.frame(t(combn(groups,2)))
+      colnames(comparisons) <- c("group1","group2")
+      t.res <- data.frame()
+      for (i in 1:nrow(comparisons)){
+        tb2 <- split(tb, as.character(tb[,group.by]))
+        if (nrow(tb2[[1]]) == 1 | nrow(tb2[[2]]) == 1) next
+        # if (link){
+        #   # if link is true, then do paired t-test with connected points.
+        #   pointpaired <- intersect(tb2[[1]][,point.by], tb2[[2]][,point.by])
+        #   if (length(pointpaired) < 2) message("Less than 3 points paired")
+        #   tb2[[1]] <- tb2[[1]][match(pointpaired, tb2[[1]][,point.by]),]
+        #   tb2[[2]] <- tb2[[2]][match(pointpaired, tb2[[2]][,point.by]),]
+        #   tmp <- t.test(x=tb2[[comparisons[i,1]]][,"gene"], y=tb2[[comparisons[i,2]]][,"gene"], paired = T)
+        #   
+        # }else{
+        # do with all samples with regular t-test
+        tmp <- t.test(x=tb2[[comparisons[i,1]]][,"NPQ"], y=tb2[[comparisons[i,2]]][,"NPQ"], paired = F)
+        # }
+        t.res <- rbind(t.res,
+                       data.frame(t = tmp$statistic,
+                                  df = tmp$parameter,
+                                  p = tmp$p.value,
+                                  confint.low = tmp$conf.int[1],
+                                  confint.high = tmp$conf.int[2],
+                                  mean.1 = tmp$estimate[1],
+                                  mean.2 = tmp$estimate[2],
+                                  stderr = tmp$stderr))
+      }
+      if (nrow(t.res) > 0){
+        res <- cbind(comparisons, t.res)
+        return(res)
+      }else{
+        return(NULL)
+      }
+      
+    })
+    g <- g + ylab("NPQ") + ggtitle(gene) + theme(axis.title.x = element_blank(),
+                                                 plot.title = element_text(hjust = 0.5))
+    output <- list(g=g, ttest=ttestresult)
+    return(output)
+  }
+  
+  g <- g + ylab("NPQ") + ggtitle(gene) + theme(axis.title.x = element_blank(),
+                                               plot.title = element_text(hjust = 0.5))
+  return(g)
+  
+}
+
+        apply_split_colors <- function(plot_obj, split_colors, split_values = NULL) {
+            if (is.null(split_colors)) return(plot_obj)
+            if (!is.null(split_values) && !is.null(names(split_colors))) {
+                split_levels <- if (is.factor(split_values)) levels(split_values) else unique(as.character(split_values))
+                ordered_colors <- split_colors[split_levels]
+                if (any(!is.na(ordered_colors))) {
+                    split_colors <- ordered_colors
+                }
+            }
+            gtable_obj <- ggplot_gtable(ggplot_build(plot_obj))
+            stripr <- which(grepl("strip-t", gtable_obj$layout$name))
+            if (length(stripr) == 0) return(gtable_obj)
+            fills <- c(split_colors)
+            k <- 1
+            for (i in stripr) {
+                j <- which(grepl("rect", gtable_obj$grobs[[i]]$grobs[[1]]$childrenOrder))
+                gtable_obj$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+                k <- k + 1
+            }
+            gtable_obj
+        }
+
+        resolve_color <- function(color_map, by) {
+            if (is.null(color_map) || is.null(by)) return(NULL)
+            if (is.list(color_map)) {
+                if (!by %in% names(color_map)) return(NULL)
+                return(color_map[[by]])
+            }
+            color_map
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+# the order of df and meta should be the same
+bulk_boxplot_plot <- function(cpm,meta,gene,group.by,split.by = NULL,shape.by = NULL,
+                              group.color = NULL,
+                              log2_scale = FALSE,ylab = "CPM") {
+
+    sample_idx <- match(as.character(rownames(meta)), colnames(cpm))
+    gene_vals <- cpm[gene, sample_idx, drop = FALSE]
+    gene_vals <- suppressWarnings(as.numeric(as.matrix(gene_vals)))
+    meta$gene <- gene_vals
+
+    df <- meta[, c(group.by, split.by, shape.by, "gene"), drop = FALSE]
+
+    df$plot_value <- if (isTRUE(log2_scale)) log2(df[["gene"]] + 1) else df[["gene"]]
+    plot_ylab <- if (isTRUE(log2_scale)) paste0("log2(", ylab, " + 1)") else ylab
+
+    g <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[group.by]], y = .data[["plot_value"]]))
+    g <- g + ggplot2::geom_boxplot(
+        ggplot2::aes(fill = .data[[group.by]]),
+        outlier.shape = NA,
+        linewidth = 0.3,
+        alpha = 0.6
+    )
+
+    use_shape <- !is.null(shape.by) && shape.by %in% colnames(df)
+    if (use_shape) {
+        n_shapes <- length(unique(stats::na.omit(df[[shape.by]])))
+        use_shape <- n_shapes <= 6
+    }
+
+    point_aes <- ggplot2::aes(color = .data[[group.by]])
+    if (use_shape) {
+        point_aes <- ggplot2::aes(color = .data[[group.by]], shape = .data[[shape.by]])
+    }
+
+    g <- g + ggplot2::geom_point(
+        mapping = point_aes,
+        position = ggplot2::position_jitter(width = 0.2, height = 0),
+        size = 1.6
+    )
+
+    if (!is.null(group.color)) {
+        g <- g + ggplot2::scale_color_manual(values = group.color) +
+            ggplot2::scale_fill_manual(values = group.color)
+    }
+
+    if (!is.null(split.by) && split.by %in% colnames(df)) {
+        g <- g + ggplot2::facet_wrap(stats::reformulate(split.by), scales = "free_y")
+    }
+
+    g + ggplot2::theme_classic() +
+        ggplot2::theme(
+            axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+            legend.position = "none",
+            strip.background = ggplot2::element_blank(),
+            strip.text = ggplot2::element_text(face = "bold")
+        ) +
+        ggplot2::labs(x = NULL, y = plot_ylab) +
+        ggplot2::guides(fill = "none")
 }

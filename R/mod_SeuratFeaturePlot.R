@@ -33,14 +33,20 @@ modUI_SeuratFeaturePlot <- function(id, width_default = 6, height_default = 6, f
 }
 
 
-modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, dataname) {
+modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, dataname, raster = NULL, feature_default = NULL) {
     moduleServer(id, function(input, output, session) {
         observeEvent(srt(),
             {
                 req(srt())
                 reductions <- if (!is.null(reduction_choices)) reduction_choices else Seurat::Reductions(srt())
                 updateSelectInput(session, "reduction", choices = reductions)
-                updateSelectizeInput(session, "gene", choices = rownames(srt()), server = TRUE)
+                gene_choices <- rownames(srt())
+                gene_selected <- if (!is.null(feature_default) && feature_default %in% gene_choices) {
+                    feature_default
+                } else {
+                    NULL
+                }
+                updateSelectizeInput(session, "gene", choices = gene_choices, selected = gene_selected, server = TRUE)
             },
             ignoreInit = FALSE
         )
@@ -50,7 +56,8 @@ modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, datan
             Seurat::FeaturePlot(
                 srt(),
                 features = input$gene,
-                reduction = input$reduction
+                reduction = input$reduction,
+                raster = raster
             ) + coord_fixed(ratio = 1)
         })
 

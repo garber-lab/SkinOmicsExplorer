@@ -46,7 +46,7 @@ modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, hei
     )
 }
 
-modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
+modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL, feature_default = NULL, groupby_colors = NULL, groupby_colors_by = NULL){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
         groupby_options <- reactiveVal(character())
@@ -75,6 +75,10 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
         observe({
             obj <- srt()
             req(obj)
+            selected_gene <- NULL
+            if (!is.null(feature_default) && feature_default %in% rownames(obj)) {
+                selected_gene <- feature_default
+            }
             groupbys <- if(is.null(groupby_column)){
                 md <- obj@meta.data
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
@@ -89,7 +93,11 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
             }else{
                 splitby_column
             }
-            updateSelectizeInput(session, "gene", choices = rownames(obj), server = T)
+            if (is.null(selected_gene)) {
+                updateSelectizeInput(session, "gene", choices = rownames(obj), server = T)
+            } else {
+                updateSelectizeInput(session, "gene", choices = rownames(obj), selected = selected_gene, server = T)
+            }
             groupby_options(groupbys)
             splitby_options(splitbys)
         })
@@ -126,12 +134,19 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
         plot_violin <- reactive({
             plot_obj <- srt_for_plot()
             req(plot_obj, groupby_param(), input$gene)
+            use_colors <- NULL
+            if (!is.null(groupby_colors)) {
+                if (is.null(groupby_colors_by) || identical(groupby_param(), groupby_colors_by)) {
+                    use_colors <- groupby_colors
+                }
+            }
             g <- VlnPlot.xlabel(
                 plot_obj,
                 input$gene,
                 group.by = groupby_param(),
                 split.by = splitby_param(),
-                plot_mean = input$plotmean)
+                plot_mean = input$plotmean,
+                colors = use_colors)
             return(g)
         })
 

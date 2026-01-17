@@ -35,7 +35,7 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
 }
 
 
-modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, dataname) {
+modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, groupby_default = NULL, dataname, groupby_colors = NULL, groupby_colors_by = NULL) {
     moduleServer(id, function(input, output, session) {
         observeEvent(srt(),
             {
@@ -49,7 +49,12 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
                     cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                     unique(cols)
                 }
-                updateSelectInput(session, "groupby", choices = groupbys)
+                groupby_selected <- if (!is.null(groupby_default) && groupby_default %in% groupbys) {
+                    groupby_default
+                } else {
+                    NULL
+                }
+                updateSelectInput(session, "groupby", choices = groupbys, selected = groupby_selected)
             },
             ignoreInit = F
         )
@@ -63,6 +68,16 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
                 shuffle = T, alpha = 0.8,
                 label = isTRUE(input$label)
             ) + coord_fixed(ratio = 1)
+            use_colors <- NULL
+            if (!is.null(groupby_colors)) {
+                if (is.null(groupby_colors_by) || identical(input$groupby, groupby_colors_by)) {
+                    meta_vals <- srt()@meta.data[[input$groupby]]
+                    use_colors <- manual_scale_values(groupby_colors, meta_vals)
+                }
+            }
+            if (!is.null(use_colors)) {
+                g <- g + scale_color_manual(values = use_colors)
+            }
             if (!isTRUE(input$legend)) {
                 g <- g + NoLegend()
             }

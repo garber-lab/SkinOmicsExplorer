@@ -83,7 +83,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
         srt <- reactive({
             progress <- Progress$new(session, min = 0, max = 1)
             on.exit(progress$close())
-            progress$set(message = "Reading Seurat Object", detail = "about 20 seconds")
+            progress$set(message = "Reading Seurat Object", detail = "about 10 seconds")
 
             obj <- readRDS(paste0(data_path(), "fourDisease_seqfish/fourDisease_seqfish_seuratObject_shiny.rds"))
             return(obj)
@@ -98,6 +98,11 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             df <- do.call(rbind, strsplit(colnames(bulk_tb()), ":"))
             df <- as.data.frame(df)
             colnames(df) <- c("CellSubtype", "CellType", "Disease", "Patient")
+            bin_pattern <- "_bin[0-9]+$"
+            has_bin <- grepl(bin_pattern, df$CellSubtype)
+            df$bin <- NA
+            df$bin[has_bin] <- sub("^.*_bin", "bin", df$CellSubtype[has_bin])
+            df$CellSubtype[has_bin] <- sub(bin_pattern, "", df$CellSubtype[has_bin])
             rownames(df) <- colnames(bulk_tb())
             return(df)
         })
@@ -192,14 +197,17 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
 
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
-            srt,
+            srt = srt,
+            groupby_default = "CellType",
             dataname = dataname
         )
 
         modServer_SeuratFeaturePlot(
             id = "featureplot",
             srt = srt,
-            dataname = dataname
+            dataname = dataname,
+            raster = FALSE,
+            feature_default = "IFNG"
         )
 
         modServer_SeuratVlnPlot(
@@ -207,7 +215,8 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             srt = srt,
             dataname = dataname,
             groupby_column = "CellSubtype",
-            splitby_column = "CellType"
+            splitby_column = "CellType",
+            feature_default = "IFNG"
         )
 
         modServer_SeuratImageDimPlot(
@@ -229,6 +238,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            feature_default = "IFNG",
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
             scalebar_unit = "μm",
@@ -242,6 +252,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path) {
             dataname = dataname,
             colors.celltype = colors.celltype,
             fov_choices = NULL,
+            feature_default = "IFNG",
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
             scalebar_unit = "μm",
