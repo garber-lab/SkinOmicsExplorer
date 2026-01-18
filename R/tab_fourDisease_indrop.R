@@ -64,25 +64,29 @@ tabUI_fourDisease_indrop <- function(id){
     )
 }
 
-tabServer_fourDisease_indrop <- function(id, data_path){
+tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
     moduleServer(id, function(input, output, session){
         dataname <- "fourDisease_indrop"
 
-        srt <- reactive({
-            progress <- Progress$new(session, min=0, max=1)
-            on.exit(progress$close())
-            progress$set(message = 'Reading Seurat Object', detail = 'about 10 seconds')
+        is_active <- reactive(identical(active_tab(), "fourDisease_indrop"))
+        srt <- reactiveVal(NULL)
+        bulk_tb <- reactiveVal(NULL)
 
-            obj <- readRDS(paste0(data_path(), 'fourDisease_indrop/fourDisease_indrop_seuratObject.rds'))
-            return(obj)
-        })
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(srt()) || is.null(bulk_tb())) {
+                if (is.null(srt())) {
+                    srt(readRDS(paste0(data_path(), "fourDisease_indrop/fourDisease_indrop_seuratObject.rds")))
+                }
 
-        bulk_tb <- reactive({
-            tb <- readRDS(paste0(data_path(), 'fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds'))
-            return(tb)
-        })
+                if (is.null(bulk_tb())) {
+                    bulk_tb(readRDS(paste0(data_path(), "fourDisease_indrop/fourDisease_indrop_pseudobulk_sum_CellType_Disease_Skin.rds")))
+                }
+            }
+        }, ignoreInit = TRUE)
 
         bulk_meta <- reactive({
+            req(bulk_tb(), srt())
             df <- do.call(rbind, strsplit(colnames(bulk_tb()), ":"))
             df <- as.data.frame(df)
             colnames(df) <- c("CellType","Disease","Skin")
@@ -98,7 +102,8 @@ tabServer_fourDisease_indrop <- function(id, data_path){
             id = "dimplot",
             srt = srt,
             groupby_default = "CellType",
-            dataname = dataname
+            dataname = dataname,
+            raster = FALSE
         )
 
         modServer_SeuratFeaturePlot(

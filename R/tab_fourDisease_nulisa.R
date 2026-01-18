@@ -13,20 +13,26 @@ tabUI_fourDisease_nulisa <- function(id) {
     )
 }
 
-tabServer_fourDisease_nulisa <- function(id, data_path) {
+tabServer_fourDisease_nulisa <- function(id, data_path, active_tab) {
     moduleServer(id, function(input, output, session) {
         dataname <- "fourDisease_nulisa"
 
-        df.nulisa <- reactive({
-            df <- read.csv(paste0(data_path(), "fourDisease_nulisa/fourDisease_nulisa_shiny.csv"), row.names = 1)
-            if ("Skin" %in% colnames(df)) {
-                df$Skin <- factor(df$Skin, levels = c("HC", "NL", "L"))
+        is_active <- reactive(identical(active_tab(), "fourDisease_nulisa"))
+        df.nulisa <- reactiveVal(NULL)
+
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(df.nulisa())) {
+                df <- read.csv(paste0(data_path(), "fourDisease_nulisa/fourDisease_nulisa_shiny.csv"), row.names = 1)
+                if ("Skin" %in% colnames(df)) {
+                    df$Skin <- factor(df$Skin, levels = c("HC", "NL", "L"))
+                }
+                if ("Disease" %in% colnames(df)) {
+                    df$Disease <- factor(df$Disease, levels = c("HC", "DM", "CLE", "Pso", "Vit"))
+                }
+                df.nulisa(df)
             }
-            if ("Disease" %in% colnames(df)) {
-                df$Disease <- factor(df$Disease, levels = c("HC", "DM", "CLE", "Pso", "Vit"))
-            }
-            df
-        })
+        }, ignoreInit = TRUE)
 
         colors.disease <- c(
             "HC" = "#3E6D95",

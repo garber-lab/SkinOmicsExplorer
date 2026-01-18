@@ -7,19 +7,26 @@ tabUI_UV_olink <- function(id) {
     )
 }
 
-tabServer_UV_olink <- function(id, data_path) {
+tabServer_UV_olink <- function(id, data_path, active_tab) {
     moduleServer(id, function(input, output, session) {
-        meta <- reactive({
-            path <- paste0(data_path(), "UV_olink/UV_olink_meta_data.xlsx")
-            df <- openxlsx::read.xlsx(path)
-            df
-        })
+        is_active <- reactive(identical(active_tab(), "UV_olink"))
+        meta <- reactiveVal(NULL)
+        raw <- reactiveVal(NULL)
 
-        raw <- reactive({
-            path <- paste0(data_path(), "UV_olink/UV_olink_absolute_concentration.xlsx")
-            df <- openxlsx::read.xlsx(path)
-            df
-        })
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(meta()) || is.null(raw())) {
+                if (is.null(meta())) {
+                    path <- paste0(data_path(), "UV_olink/UV_olink_meta_data.xlsx")
+                    meta(openxlsx::read.xlsx(path))
+                }
+
+                if (is.null(raw())) {
+                    path <- paste0(data_path(), "UV_olink/UV_olink_absolute_concentration.xlsx")
+                    raw(openxlsx::read.xlsx(path))
+                }
+            }
+        }, ignoreInit = TRUE)
 
         modServer_UV_OlinkJitterPlot(
             id = "olink_jitter",

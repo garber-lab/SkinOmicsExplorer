@@ -52,7 +52,7 @@ tabUI_DM_10x <- function(id){
     )
 }
 
-tabServer_DM_10x <- function(id, data_path){
+tabServer_DM_10x <- function(id, data_path, active_tab){
     moduleServer(id, function(input, output, session){
         dataname <- "DM_10x"
 
@@ -66,21 +66,25 @@ tabServer_DM_10x <- function(id, data_path){
             "pDC" = "#84A2E0"
         )
 
-        srt <- reactive({
-            progress <- Progress$new(session, min = 0, max = 1)
-            on.exit(progress$close())
-            progress$set(message = "Reading Seurat Object", detail = "about 10 seconds")
+        is_active <- reactive(identical(active_tab(), "DM_10x"))
+        srt <- reactiveVal(NULL)
+        bulk_tb <- reactiveVal(NULL)
 
-            obj <- readRDS(paste0(data_path(), "DM_10x/DM_10x_seuratObject_shiny.rds"))
-            return(obj)
-        })
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(srt()) || is.null(bulk_tb())) {
+                if (is.null(srt())) {
+                    srt(readRDS(paste0(data_path(), "DM_10x/DM_10x_seuratObject_shiny.rds")))
+                }
 
-        bulk_tb <- reactive({
-            tb <- readRDS(paste0(data_path(), "DM_10x/DM_10x_srt_pseudobulk_sum_CellSubtype_Sample.rds"))
-            return(tb)
-        })
+                if (is.null(bulk_tb())) {
+                    bulk_tb(readRDS(paste0(data_path(), "DM_10x/DM_10x_srt_pseudobulk_sum_CellSubtype_Sample.rds")))
+                }
+            }
+        }, ignoreInit = TRUE)
 
         bulk_meta <- reactive({
+            req(bulk_tb(), srt())
             df <- do.call(rbind, strsplit(colnames(bulk_tb()), ":"))
             df <- as.data.frame(df, stringsAsFactors = FALSE)
             colnames(df) <- c("CellSubtype", "Sample")
@@ -110,6 +114,7 @@ tabServer_DM_10x <- function(id, data_path){
             srt = srt,
             groupby_default = "CellSubtype",
             dataname = dataname,
+            raster = FALSE,
             groupby_colors = colors.ic,
             groupby_colors_by = "CellSubtype"
         )

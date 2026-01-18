@@ -78,23 +78,34 @@ tabUI_CLE_gse179633 <- function(id){
     )
 }
 
-tabServer_CLE_gse179633 <- function(id, data_path){
+tabServer_CLE_gse179633 <- function(id, data_path, active_tab){
     moduleServer(id, function(input, output, session){
         dataname <- "CLE_gse179633"
 
-        srt <- reactive({
-            progress <- Progress$new(session, min=0, max=1)
-            on.exit(progress$close())
-            progress$set(message = "Reading Seurat Object", detail = 'about 10 seconds')
+        is_active <- reactive(identical(active_tab(), "CLE_gse179633"))
+        srt <- reactiveVal(NULL)
+        bulk_tb <- reactiveVal(NULL)
 
-            obj <- readRDS(paste0(data_path(), 'CLE_gse179633/CLE_gse179633_seuratObject_shiny.rds'))
-            return(obj)
-        })
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(srt()) || is.null(bulk_tb())) {
+                progress <- Progress$new(session, min = 0, max = 1)
+                on.exit(progress$close())
 
-        bulk_tb <- reactive({
-            tb <- readRDS(paste0(data_path(), 'CLE_gse179633/CLE_gse179633_pseudobulk_sum_CellSubtype_CellType_Disease_tissueType_bin30.rds'))
-        })
+                progress$set(message = "Loading data", detail = "Estimated ~10 seconds")
+                if (is.null(srt())) {
+                    srt(readRDS(paste0(data_path(), "CLE_gse179633/CLE_gse179633_seuratObject_shiny.rds")))
+                }
+
+                progress$set(value = 0.7)
+                if (is.null(bulk_tb())) {
+                    bulk_tb(readRDS(paste0(data_path(), "CLE_gse179633/CLE_gse179633_pseudobulk_sum_CellSubtype_CellType_Disease_tissueType_bin30.rds")))
+                }
+                progress$set(value = 1)
+            }
+        }, ignoreInit = TRUE)
         bulk_meta <- reactive({
+            req(bulk_tb(), srt())
             df <- as.data.frame(do.call(rbind, strsplit(colnames(bulk_tb()), ":")))
             colnames(df) <- c("CellSubtype","CellType","Disease","tissueType")
             rownames(df) <- colnames(bulk_tb())
@@ -115,7 +126,8 @@ tabServer_CLE_gse179633 <- function(id, data_path){
             id = "dimplot",
             srt = srt,
             groupby_default = "CellType",
-            dataname = dataname
+            dataname = dataname,
+            raster = FALSE
         )
 
         modServer_SeuratFeaturePlot(

@@ -15,25 +15,34 @@ tabUI_UV_bulk_FB <- function(id) {
     )
 }
 
-tabServer_UV_bulk_FB <- function(id, data_path) {
+tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
     moduleServer(id, function(input, output, session) {
-        bulk_cpm_raw <- read.csv(
-            "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv",
-            row.names = 1,
-            check.names = FALSE,
-            sep = "\t"
-        )
-        bulk_meta_raw <- read.csv(
-            "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/FB/bulk_FB_metadata.csv",
-            row.names = 1,
-            stringsAsFactors = FALSE
-        )
-        bulk_meta_raw$Treatment <- factor(
-            bulk_meta_raw$Treatment,
-            levels = c("Fib_media","Mock","UV100","UV50+IFNb","IFNb","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
-        )
-        bulk_cpm <- reactive(bulk_cpm_raw)
-        bulk_meta <- reactive(bulk_meta_raw)
+        is_active <- reactive(identical(active_tab(), "UV_bulk_FB"))
+        bulk_cpm <- reactiveVal(NULL)
+        bulk_meta <- reactiveVal(NULL)
+
+        observeEvent(is_active(), {
+            if (!isTRUE(is_active())) return()
+            if (is.null(bulk_cpm()) || is.null(bulk_meta())) {
+                bulk_cpm_raw <- read.csv(
+                    "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv",
+                    row.names = 1,
+                    check.names = FALSE,
+                    sep = "\t"
+                )
+                bulk_meta_raw <- read.csv(
+                    "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/FB/bulk_FB_metadata.csv",
+                    row.names = 1,
+                    stringsAsFactors = FALSE
+                )
+                bulk_meta_raw$Treatment <- factor(
+                    bulk_meta_raw$Treatment,
+                    levels = c("Fib_media","Mock","UV100","UV50+IFNb","IFNb","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
+                )
+                bulk_cpm(bulk_cpm_raw)
+                bulk_meta(bulk_meta_raw)
+            }
+        }, ignoreInit = TRUE)
 
         FB_treatment_colors <- c(
             "Mock" = "#e6bcb4",
