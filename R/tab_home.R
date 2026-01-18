@@ -77,7 +77,7 @@ tab_home_cards <- list(
       "Cohort composition" = " DM,  CLE,  psoriasis,  vitiligo,  healthy controls", # !!! fill in the number
       "Sampling method" = "Suction blister fluid",
       "Skin type" = "Lesional, non-lesional, healthy skin",
-      "Panel" = "Immune" # !!! confirm
+      "Panel" = "NULISAseq Inflammation Panel 250 Targets"
     ),
     tech = "Proteomics · NULISA"
   ),
@@ -107,17 +107,28 @@ tab_home_cards <- list(
     specs = c(
       "Cohort composition" = "1 CLE",
       "Original skin type" = "Non-lesional skin",
-      "Sampled skin condition" = "NL, UVB-irradiated NL, UVB-irradiatied NL after Anifrolumab",
+      "Sampled skin condition" = "NL, UVB-irradiated NL, UVB-irradiatied NL after Anifrolumab treatment",
       "Sampling method" = "Punch biopsy",
-      "Imaging design" = "Two tissue sections per punch biopsy were imaged" # !!! confirm
+      "Imaging design" = "One tissue section per punch biopsy was imaged"
     ),
     tech = "Spatial transcriptomics · seqFISH"
   ),
-  UV_bulk = dataset_card_content(
-    title = "UV bulk RNA-seq",
-    tagline = "Bulk RNA-seq of UVB-irradiated keratinocytes (KCs) pretreated with or without IFNβ. And bulk RNA-seq of dendritic cells (DCs) incubated with KC supernatants.",
+  UV_bulk_moDC = dataset_card_content(
+    title = "UV bulk RNA-seq (moDC)",
+    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC media from UV conditions (UV50/UV100 ± IFNb) plus direct IFNb and LPS stimulation.",
     specs = c(
-      "Cell type" = "Primary keratinocytes, monocyte-derived DCs", # !!! confirm
+      "Cell type" = "Monocyte-derived DCs",
+      "Treatments" = "Mock, KC_media, UV50, UV100, UV50+IFNb, UV100+IFNb, IFNb, Direct IFNb, LPS",
+      "Sampling method" = "Cell pellet"
+    ),
+    tech = "Transcriptomics · bulk RNA-seq"
+  ),
+  UV_bulk_FB = dataset_card_content(
+    title = "UV bulk RNA-seq (FB)",
+    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNb) and direct cytokine stimulation.",
+    specs = c(
+      "Cell type" = "Fibroblasts",
+      "Treatments" = "Fib_media, Mock, UV100, UV50+IFNb, IFNb, Direct IFNb, Direct IFNg, Direct TNF, Direct IL-1",
       "Sampling method" = "Cell pellet"
     ),
     tech = "Transcriptomics · bulk RNA-seq"
@@ -159,7 +170,8 @@ tabUI_home <- function(id) {
           layout_column_wrap(
             bslib::card(tab_home_cards[["UV_olink"]]),
             bslib::card(tab_home_cards[["UV_seqfish"]]),
-            bslib::card(tab_home_cards[["UV_bulk"]]),
+            bslib::card(tab_home_cards[["UV_bulk_moDC"]]),
+            bslib::card(tab_home_cards[["UV_bulk_FB"]]),
             width = 1/2
           )
         )
@@ -188,7 +200,8 @@ tabUI_home <- function(id) {
           ),
           tags$h5(class = "mt-4", "Bulk RNA-seq"),
           layout_column_wrap(
-            bslib::card(tab_home_cards[["UV_bulk"]]),
+            bslib::card(tab_home_cards[["UV_bulk_moDC"]]),
+            bslib::card(tab_home_cards[["UV_bulk_FB"]]),
             width = 1/2
           )
         )
