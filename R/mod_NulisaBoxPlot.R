@@ -13,7 +13,7 @@ modUI_NulisaBoxPlot <- function(id, width_default = 6, height_default = 3.5, for
     }
 
     plot_panel <- wellPanel(
-        selectizeInput(ns("gene"), "Gene name:", choices = NULL),
+        selectizeInput(ns("gene"), "Protein name:", choices = NULL),
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
         actionButton(ns("plot"), "Plot")
@@ -28,7 +28,7 @@ modUI_NulisaBoxPlot <- function(id, width_default = 6, height_default = 3.5, for
     )
 }
 
-modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, splitby_column = NULL, group.color = NULL, split.color = NULL, gene_default = NULL) {
+modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, splitby_column = NULL, groupby_colors = NULL, splitby_colors = NULL, feature_default = NULL) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
         groupby_options <- reactiveVal(character())
@@ -40,8 +40,8 @@ modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, sp
 
             gene_choices <- unique(as.character(df$Target))
             selected_gene <- NULL
-            if (!is.null(gene_default) && gene_default %in% gene_choices) {
-                selected_gene <- gene_default
+            if (!is.null(feature_default) && feature_default %in% gene_choices) {
+                selected_gene <- feature_default
             }
             if (is.null(selected_gene)) {
                 updateSelectizeInput(session, "gene", choices = gene_choices, server = TRUE)
@@ -99,7 +99,7 @@ modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, sp
         plot_boxplot <- reactive({
             df <- nls()
             req(df, input$gene, groupby_param())
-            group_colors <- resolve_color(group.color, groupby_param())
+            group_colors <- resolve_color(groupby_colors, groupby_param())
             if (!is.null(group_colors) && !("black" %in% names(group_colors))) {
                 group_colors <- c(group_colors, black = "black")
             }
@@ -121,7 +121,7 @@ modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, sp
                 plot_obj <- plot_obj$g
             }
             split_values <- if (is.null(splitby_param())) NULL else df[[splitby_param()]]
-            apply_split_colors(plot_obj, resolve_color(split.color, splitby_param()), split_values)
+            apply_split_colors(plot_obj, resolve_color(splitby_colors, splitby_param()), split_values)
         })
 
         output$plot_boxplot <- renderPlot({

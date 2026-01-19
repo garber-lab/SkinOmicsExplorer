@@ -49,6 +49,7 @@ modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8,
 
 
 modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
+    splitby_column_missing <- missing(splitby_column)
     moduleServer(id, function(input, output, session){
         ns <- session$ns
 
@@ -94,10 +95,12 @@ modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupb
                 groupby_column
             }
 
-            splitbys <- if(is.null(splitby_column)){
+            splitbys <- if (splitby_column_missing){
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
-            }else{
+            } else if (is.null(splitby_column) || length(splitby_column) == 0) {
+                character(0)
+            } else {
                 splitby_column
             }
             updateSelectizeInput(session, "gene", choices = rownames(tb), server = T)

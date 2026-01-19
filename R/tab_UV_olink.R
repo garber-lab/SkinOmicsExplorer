@@ -55,7 +55,7 @@ tabServer_UV_olink <- function(id, data_path, active_tab) {
             meta = meta,
             raw = raw,
             dataname = "UV_olink",
-            gene_default = "IL6"
+            feature_default = "IL6"
         )
     })
 }

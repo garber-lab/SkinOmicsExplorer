@@ -62,9 +62,9 @@ tabServer_fourDisease_nulisa <- function(id, data_path, active_tab) {
             dataname = dataname,
             groupby_column = "Skin",
             splitby_column = "Disease",
-            group.color = colors.by,
-            split.color = colors.by,
-            gene_default = "IFNG"
+            groupby_colors = colors.by,
+            splitby_colors = colors.by,
+            feature_default = "IFNG"
         )
     })
 }

@@ -37,7 +37,7 @@ modUI_UV_OlinkJitterPlot <- function(id, width_default = 8, height_default = 3.5
     )
 }
 
-modServer_UV_OlinkJitterPlot <- function(id, meta, raw, dataname = "UV_olink", gene_default = NULL) {
+modServer_UV_OlinkJitterPlot <- function(id, meta, raw, dataname = "UV_olink", feature_default = NULL) {
     moduleServer(id, function(input, output, session) {
         treatment_levels <- c("M", "50", "100", "IFN+50", "IFN", "LPS")
         treatment_labels <- c("Mock", "UV50", "UV100", "UV50+IFNb", "IFNb", "LPS")
@@ -82,7 +82,7 @@ modServer_UV_OlinkJitterPlot <- function(id, meta, raw, dataname = "UV_olink", g
 
             selected <- input$gene
             if (is.null(selected) || !(selected %in% choices)) {
-                selected <- if (!is.null(gene_default) && gene_default %in% choices) gene_default else choices[1]
+                selected <- if (!is.null(feature_default) && feature_default %in% choices) feature_default else choices[1]
             }
 
             updateSelectInput(session, "gene", choices = choices, selected = selected)

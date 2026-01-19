@@ -38,12 +38,13 @@ modServer_UV_BulkBoxPlot <- function(id,
                                      bulk_cpm,
                                      bulk_meta,
                                      dataname = "UV_bulk",
-                                     gene_default = NULL,
+                                     feature_default = NULL,
                                      groupby_column = NULL,
                                      splitby_column = NULL,
-                                     group_colors = NULL,
+                                     groupby_colors = NULL,
                                      shape_by = NULL,
                                      ylab = "CPM") {
+    splitby_column_missing <- missing(splitby_column)
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -84,8 +85,8 @@ modServer_UV_BulkBoxPlot <- function(id,
             info <- data_info()
             req(info)
             selected_gene <- NULL
-            if (!is.null(gene_default) && gene_default %in% rownames(info$cpm)) {
-                selected_gene <- gene_default
+            if (!is.null(feature_default) && feature_default %in% rownames(info$cpm)) {
+                selected_gene <- feature_default
             }
             groupbys <- if (is.null(groupby_column)) {
                 md <- info$meta
@@ -94,10 +95,12 @@ modServer_UV_BulkBoxPlot <- function(id,
             } else {
                 groupby_column
             }
-            splitbys <- if (is.null(splitby_column)) {
+            splitbys <- if (splitby_column_missing) {
                 md <- info$meta
                 cols <- colnames(md)[sapply(md, function(x) is.character(x) || is.factor(x))]
                 unique(cols)
+            } else if (is.null(splitby_column) || length(splitby_column) == 0) {
+                character(0)
             } else {
                 splitby_column
             }
@@ -163,11 +166,11 @@ modServer_UV_BulkBoxPlot <- function(id,
                 shape_by_use <- NULL
             }
 
-            colors <- group_colors
-            if (is.function(group_colors)) {
-                colors <- group_colors(meta[[groupby]])
-            } else if (is.list(group_colors) && groupby %in% names(group_colors)) {
-                colors <- group_colors[[groupby]]
+            colors <- groupby_colors
+            if (is.function(groupby_colors)) {
+                colors <- groupby_colors(meta[[groupby]])
+            } else if (is.list(groupby_colors) && groupby %in% names(groupby_colors)) {
+                colors <- groupby_colors[[groupby]]
             }
 
             bulk_boxplot_plot(

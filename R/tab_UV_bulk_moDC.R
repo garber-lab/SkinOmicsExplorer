@@ -86,10 +86,10 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             bulk_cpm = bulk_cpm,
             bulk_meta = bulk_meta,
             dataname = "UV_bulk_moDC",
-            gene_default = "IL6",
+            feature_default = "IL6",
             groupby_column = "Treatment",
-            splitby_column = character(0),
-            group_colors = moDC_treatment_colors,
+            splitby_column = NULL,
+            groupby_colors = moDC_treatment_colors,
             shape_by = NULL,
             ylab = "CPM"
         )

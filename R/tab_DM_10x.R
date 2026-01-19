@@ -144,7 +144,7 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             bulk_meta = bulk_meta,
             dataname = dataname,
             groupby_column = "CellSubtype",
-            splitby_column = character(0),
+            splitby_column = NULL,
             subsetby_columns = c("CellSubtype")
         )
         invisible(list(srt = srt))
