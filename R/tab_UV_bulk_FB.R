@@ -1,10 +1,36 @@
 tabUI_UV_bulk_FB <- function(id) {
     ns <- NS(id)
     tagList(
-        bslib::card(
-            bslib::card_body(
-                modUI_UV_BulkBoxPlot(ns("bulk_boxplot"))
-            )
+        bslib::layout_columns(
+            bslib::card(
+                bslib::card_body(
+                    modUI_UV_BulkBoxPlot(ns("bulk_boxplot"))
+                )
+            ),
+            bslib::card(
+                bslib::card_header("Treatment conditions"),
+                bslib::card_body(
+                    tags$div(
+                        tags$strong("Conditions"),
+                        tags$ul(
+                            tags$li(tags$strong("FB_media:"), " Fibroblast media"),
+                            tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
+                            tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
+                            tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
+                            tags$li(tags$strong("IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ"),
+                            tags$li(tags$strong("Direct IFNβ:"), " IFNβ 50ng"),
+                            tags$li(tags$strong("Direct IFNγ:"), " IFNγ 100ng"),
+                            tags$li(tags$strong("Direct TNF:"), " TNF 100ng"),
+                            tags$li(tags$strong("Direct IL-1:"), " IL-1β 100ng")
+                        ),
+                        tags$strong("Cell type source"),
+                        tags$ul(
+                            tags$li(tags$strong("FB:"), " pannus-derived primary fibroblast")
+                        )
+                    )
+                )
+            ),
+            col_width = c(8, 4)
         ),
         bslib::card(
             bslib::card_header("Heatmap for bulk gene expression"),

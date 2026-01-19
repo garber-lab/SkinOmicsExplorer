@@ -1,8 +1,30 @@
 tabUI_UV_olink <- function(id) {
     ns <- NS(id)
-    bslib::card(
-        bslib::card_body(
-            modUI_UV_OlinkJitterPlot(ns("olink_jitter"))
+    tagList(
+        bslib::card(
+            bslib::card_body(
+                modUI_UV_OlinkJitterPlot(ns("olink_jitter"))
+            )
+        ),
+        bslib::card(
+            bslib::card_header("Treatment conditions"),
+            bslib::card_body(
+                tags$div(
+                    tags$strong("Conditions"),
+                    tags$ul(
+                        tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
+                        tags$li(tags$strong("UV50:"), " supernatant from keratinocyte treated with 50 mJ/cm",tags$sup("2")," UVB"),
+                        tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
+                        tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
+                        tags$li(tags$strong("IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ")
+                    ),
+                    tags$strong("Cell type source"),
+                    tags$ul(
+                        tags$li(tags$strong("KC:"), " N/TERT2G cell line"),
+                        tags$li(tags$strong("moDC:"), "monocyte-derived dendritic cells from PBMCs")
+                    )
+                )
+            )
         )
     )
 }
