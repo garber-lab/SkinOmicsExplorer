@@ -80,15 +80,6 @@ tabUI_contact <- function(id) {
           " The Garber lab led computational data analysis, while the Rashighi lab led patient recruitment, sample acquisition,",
           " and wet lab experiments."
         ),
-        tags$p(
-          tags$strong("Website author:"),
-          " Yuqing Wang (",
-          tags$a(
-            href = "mailto:yuqingwang1995@gmail.com",
-            "yuqingwang1995@gmail.com"
-          ),
-          ")."
-        ),
         contact_table
       )
     )

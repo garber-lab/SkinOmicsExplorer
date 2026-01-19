@@ -52,10 +52,10 @@ tab_home_cards <- list(
     title = "CLE GSE179633 10x",
     tagline = "Re-clustering of a deeply sequenced public CLE dataset (GSE179633).",
     specs = c(
-      "Cohort composition" = "CLE, DLE, HC", # !!! fill in the patient numbers
+      "Cohort composition" = "Epidermal (3 HC,5 DLE and 5 SLE); Dermal (4 HC,5 DLE and 7 SLE)",
       "Sampling method" = "Punch biopsy",
       "Sample process" = "Separate dermis and epidermis",
-      "Skin type" = "Lesional, non-lesional, healthy skin"
+      "Skin type" = "Lesional and healthy skin"
     ),
     tech = "scRNA-seq · 10x Genomics"
   ),
@@ -65,8 +65,7 @@ tab_home_cards <- list(
     specs = c(
       "Cohort composition" = "3 DM",
       "Sampling method" = "Punch biopsy",
-      "Sample process" = "Separate dermis and epidermis", # !!! confirm
-      "Skin type" = "Lesional, non-lesional, healthy skin" # !!! confirm
+      "Skin type" = "Lesional skin"
     ),
     tech = "scRNA-seq · 10x Genomics"
   ),
@@ -74,7 +73,7 @@ tab_home_cards <- list(
     title = "Four disease NULISA",
     tagline = "Protein levels in interstitial fluid across four autoimmune skin diseases.",
     specs = c(
-      "Cohort composition" = " DM,  CLE,  psoriasis,  vitiligo,  healthy controls", # !!! fill in the number
+      "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls", # !!! fill in the number
       "Sampling method" = "Suction blister fluid",
       "Skin type" = "Lesional, non-lesional, healthy skin",
       "Panel" = "NULISAseq Inflammation Panel 250 Targets"
@@ -82,10 +81,10 @@ tab_home_cards <- list(
     tech = "Proteomics · NULISA"
   ),
   UV_olink = dataset_card_content(
-    title = "UV in vitro OLINK",
+    title = "UV perturbation - in vitro - OLINK",
     tagline = "Proteins secreted into supernatant by UVB-irradiated keratinocytes (KCs) pretreated with or without IFNβ. Subsequently, dendritic cells (DCs) were incubated with KC supernatants, and proteins in DC supernatants were then measured.",
     specs = c(
-      "Cell type" = "Primary keratinocytes, monocyte-derived DCs", # !!! confirm
+      "Cell type" = "Keratinocyte cell line N/TERT2G, monocyte-derived DCs from PBMCs",
       "Sampling method" = "Supernatant of cell culture"
     ),
     tech = "Proteomics · Olink"
@@ -102,8 +101,8 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_seqfish = dataset_card_content(
-    title = "UV seqFISH",
-    tagline = "UVB irradiation on CLE non-lesional (NL) skin with or without Anifrolumab (type I interferon receptor antagonist) treatment.",
+    title = "UV perturbation - in vivo - seqFISH",
+    tagline = "UVB irradiation on CLE non-lesional (NL) skin before and after Anifrolumab (type I interferon receptor antagonist) treatment.",
     specs = c(
       "Cohort composition" = "1 CLE",
       "Original skin type" = "Non-lesional skin",
@@ -114,21 +113,21 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_bulk_moDC = dataset_card_content(
-    title = "UV bulk RNA-seq (moDC)",
-    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC media from UV conditions (UV50/UV100 ± IFNb) plus direct IFNb and LPS stimulation.",
+    title = "UV perturbation - in vitro - bulk RNA-seq (moDC)",
+    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC media from UV conditions (UV50/UV100 ± IFNβ) plus direct IFNβ and LPS stimulation.",
     specs = c(
-      "Cell type" = "Monocyte-derived DCs",
-      "Treatments" = "Mock, KC_media, UV50, UV100, UV50+IFNb, UV100+IFNb, IFNb, Direct IFNb, LPS",
+      "Cell type" = "Monocyte-derived DCs from PBMCs",
+      "Treatments" = "Mock, KC_media, UV50, UV100, UV50+IFNβ, UV100+IFNβ, IFNβ, Direct IFNβ, LPS",
       "Sampling method" = "Cell pellet"
     ),
     tech = "Transcriptomics · bulk RNA-seq"
   ),
   UV_bulk_FB = dataset_card_content(
-    title = "UV bulk RNA-seq (FB)",
-    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNb) and direct cytokine stimulation.",
+    title = "UV perturbation - in vitro - bulk RNA-seq (FB)",
+    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
     specs = c(
-      "Cell type" = "Fibroblasts",
-      "Treatments" = "Fib_media, Mock, UV100, UV50+IFNb, IFNb, Direct IFNb, Direct IFNg, Direct TNF, Direct IL-1",
+      "Cell type" = "Pannus-derived primary fibroblasts",
+      "Treatments" = "Fib_media, Mock, UV100, UV50+IFNβ, IFNβ, Direct IFNβ, Direct IFNγ, Direct TNF, Direct IL-1",
       "Sampling method" = "Cell pellet"
     ),
     tech = "Transcriptomics · bulk RNA-seq"
@@ -143,11 +142,44 @@ tabUI_home <- function(id) {
   tagList(
     bslib::card(
       bslib::card_header("Introduction"),
-      bslib::card_body(tags$p("!!introduction to this Shiny app.")) # !!! fill in
+      bslib::card_body(tags$p(
+        "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset and link you to the corresponding analysis modules."
+      ))
     ),
     bslib::card(
       bslib::card_header("Publication"),
-      bslib::card_body(tags$p("!!publication")) # !!! fill in
+      bslib::card_body(
+        tags$h5(
+          class = "mb-2",
+          "A Spatially Coordinated Keratinocyte-Fibroblast Circuit Recruits MMP9+ Myeloid Cells to Drive IFN-I-Driven Inflammation in Photosensitive Autoimmunity"
+        ),
+        tags$small(class = "text-muted", "Abstract"),
+        tags$p(
+          paste(
+            "Photosensitivity is central to cutaneous lupus erythematosus (CLE) and dermatomyositis (DM),",
+            "but the mechanisms linking UVB exposure to tissue-specific autoimmunity are poorly defined.",
+            "Using single-cell RNA sequencing, spatial transcriptomics, UVB provocation, and in vitro modeling,",
+            "we identify MMP9+ CD14+ myeloid cells as critical mediators of photosensitivity.",
+            "These cells expand significantly in lesional skin, produce IFN-beta, and colocalize with cytotoxic",
+            "CD4+ T cells at the dermal-epidermal junction.",
+            "Keratinocytes activate fibroblasts in the superficial dermis, prompting them to release chemokines",
+            "(CCL2, CCL19, CCL7, CCL8) that recruit MMP9+ CD14+ cells.",
+            "In vitro, IFN-I-primed keratinocytes exposed to UVB release cytokines activating dendritic cells,",
+            "mirroring in vivo responses.",
+            "UVB irradiation of non-lesional skin of DM patients rapidly recruits these myeloid cells.",
+            "In a clinical proof-of-concept study, anti-IFN-I treatment with anifrolumab prevented UVB-induced",
+            "myeloid infiltration and reduced photosensitivity.",
+            "Thus, targeting MMP9+ CD14+ cells may offer therapeutic potential for managing photosensitive",
+            "autoimmune skin conditions."
+          )
+        )
+      )
+    ),
+    bslib::card(
+      bslib::card_header("Citation"),
+      bslib::card_body(tags$p(
+        "" # !!! Add citation info here
+      ))
     ),
     accordion(
       accordion_panel(
@@ -155,6 +187,14 @@ tabUI_home <- function(id) {
         fluidRow(
           tags$h5("Four disease comparison"),
           layout_column_wrap(
+            tags$div(
+              class = "mb-3",
+              tags$img(
+                src = "assets/scheme_four_disease.png",
+                alt = "Four disease comparison schematic",
+                class = "img-fluid"
+              )
+            ),
             bslib::card(tab_home_cards[["fourDisease_indrop"]]),
             bslib::card(tab_home_cards[["fourDisease_nulisa"]]),
             bslib::card(tab_home_cards[["fourDisease_seqfish"]]),

@@ -22,6 +22,7 @@ library(ComplexHeatmap)
 
 options(scipen = 4)
 setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
+addResourcePath("assets", "www")
 for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 
 
