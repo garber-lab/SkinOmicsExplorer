@@ -49,15 +49,6 @@ manual_scale_values <- function(values, data_values) {
   values
 }
 
-FetchData.compat <- function(object, vars, slot = NULL, ...) {
-  fetch_formals <- tryCatch(formals(FetchData), error = function(e) NULL)
-  if (!is.null(fetch_formals) && "layer" %in% names(fetch_formals)) {
-    FetchData(object = object, vars = vars, layer = slot, ...)
-  } else {
-    FetchData(object = object, vars = vars, slot = slot, ...)
-  }
-}
-
 
 test_ggplot <- function() {
   ggplot(data.frame(x = c(1, 2), y = c(2, 1))) +
@@ -91,7 +82,7 @@ VlnPlot.xlabel <- function(
   assay <- assay %||% DefaultAssay(object = object)
   DefaultAssay(object = object) <- assay
 
-  gene_exp <- FetchData.compat(object = object, vars = gene, slot = slot)
+  gene_exp <- FetchData(object = object, vars = gene, layer = slot)
   if (sum(gene_exp) == 0) {
     warning("No expression in data")
     return(invisible(NULL))

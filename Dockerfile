@@ -14,10 +14,12 @@ RUN apt-get update \
      libglpk40 libgdal34t64 libproj25 libgeos-c1t64 libudunits2-0 libglu1-mesa \
   && rm -rf /var/lib/apt/lists/*
 
-RUN R -q -e 'install.packages(c("remotes","BiocManager","shiny","bslib","shinyjs","Seurat","tidyr","ggplot2","plotly","dplyr","gganimate","ggforce","networkD3","rgl","transport","webshot","eulerr"))'
+RUN R -q -e 'install.packages(c("remotes","BiocManager","shiny","bslib","shinyjs","tidyr","ggplot2","plotly","dplyr","gganimate","ggforce","networkD3","rgl","transport","webshot","eulerr"))' \
+  && R -q -e 'remotes::install_version("Seurat", version="5.3.0", repos="https://cloud.r-project.org")'
 RUN R -q -e 'BiocManager::install("ComplexHeatmap")'
 RUN R -q -e 'remotes::install_github("Yuqing66/AddOns")'
 RUN R -q -e 'remotes::install_github("Yuqing66/scSpatial")'
+RUN R -q -e 'install.packages(c("openxlsx","ggbeeswarm"))'
 
 COPY . /shinyApp
 

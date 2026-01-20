@@ -295,7 +295,8 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
-            subsetby_columns = c("Disease")
+            subsetby_columns = c("Disease"),
+            show_bins_toggle = TRUE
         )
     })
 }

@@ -61,9 +61,11 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
 
         plot_embedding <- reactive({
             req(srt(), input$reduction, input$groupby)
+            srt <- srt()
             g <- Seurat::DimPlot(
-                srt(),
+                srt,
                 reduction = input$reduction,
+                cells = colnames(srt), # plot all cells, even if the assay used to get the reduction is removed
                 group.by = input$groupby,
                 shuffle = T, alpha = 0.8,
                 label = isTRUE(input$label),
@@ -74,7 +76,7 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
                 groupby_names <- names(groupby_colors_list)
                 if (length(groupby_names) > 0 && input$groupby %in% groupby_names) {
                     groupby_colors <- groupby_colors_list[[input$groupby]]
-                    meta_vals <- srt()@meta.data[[input$groupby]]
+                    meta_vals <- srt@meta.data[[input$groupby]]
                     use_colors <- manual_scale_values(groupby_colors, meta_vals)
                 }
             }

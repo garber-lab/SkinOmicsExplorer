@@ -51,12 +51,12 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             if (!isTRUE(is_active())) return()
             if (is.null(bulk_cpm()) || is.null(bulk_meta())) {
                 bulk_cpm_raw <- read.csv(
-                    "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/DC/bulk_moDC_cpm.csv",
+                    "shinyApp_content/UV_bulk/DC/bulk_moDC_cpm.csv",
                     row.names = 1,
                     check.names = FALSE
                 )
                 bulk_meta_raw <- read.csv(
-                    "/Users/yuqing/UMass Medical School Dropbox/Yuqing Wang/Ongoing/data_hosting/shinyApp_content/UV_bulk/DC/bulk_moDC_metadata.csv",
+                    "shinyApp_content/UV_bulk/DC/bulk_moDC_metadata.csv",
                     row.names = 1,
                     stringsAsFactors = FALSE
                 )

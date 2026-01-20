@@ -8,6 +8,7 @@ library(Seurat)
 # library(tidyverse)
 library(tidyr)
 library(ggplot2)
+library(ggbeeswarm)
 library(plotly)
 library(dplyr)
 
@@ -21,7 +22,7 @@ library(ComplexHeatmap)
 # library(circlize)
 
 options(scipen = 4)
-setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
+# setwd("/Users/yuqing/projects/apps/SkinOmicsExplorer/")
 addResourcePath("assets", "www")
 for (f in list.files("R", "[.][Rr]$", full.names = TRUE)) source(f)
 
