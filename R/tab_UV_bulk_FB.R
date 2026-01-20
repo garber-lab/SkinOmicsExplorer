@@ -51,13 +51,13 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             if (!isTRUE(is_active())) return()
             if (is.null(bulk_cpm()) || is.null(bulk_meta())) {
                 bulk_cpm_raw <- read.csv(
-                    "UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv",
+                    paste0(data_path(), "UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv"),
                     row.names = 1,
                     check.names = FALSE,
                     sep = "\t"
                 )
                 bulk_meta_raw <- read.csv(
-                    "UV_bulk/FB/bulk_FB_metadata.csv",
+                    paste0(data_path(), "UV_bulk/FB/bulk_FB_metadata.csv"),
                     row.names = 1,
                     stringsAsFactors = FALSE
                 )
