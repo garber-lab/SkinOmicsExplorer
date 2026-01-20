@@ -125,7 +125,16 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             "UV258fov3" = "bottomleft"
         )
 
-        colors.celltype <- c(
+        colors.CellType <- c(
+            "KC" = "#634F8B",
+            "Mel" = "#0000dd",
+            "MC" = "#15e18d",
+            "Lymph" = "#e7a500",
+            "EC" = "#d70000",
+            "Schwann" = "#5c00ab",
+            "FB" = "#005759"
+        )
+        colors.CellSubtype <- c(
             "KC_basal" = "#634F8B", #' #645473'
             "KC_cycle" = "#FFD252",
             "KC_spinous" = "#00acc7",
@@ -185,6 +194,10 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             id = "dimplot",
             srt = srt,
             groupby_default = "CellType",
+            groupby_colors_list = list(
+                "CellType" = colors.CellType,
+                "CellSubtype" = colors.CellSubtype
+            ),
             dataname = dataname,
             raster = FALSE
         )
@@ -237,9 +250,10 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             id = "image_featureplot_contour",
             srt = srt,
             dataname = dataname,
-            colors.celltype = colors.celltype,
+            colors.cell = colors.celltype,
             fov_choices = NULL,
             feature_default = "IFNG",
+            groupby_column = "CellSubtype",
             scalebar_length = 485.437,
             scalebar_numConv = 1.03,
             scalebar_unit = "μm",

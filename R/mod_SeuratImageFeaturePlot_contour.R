@@ -1,4 +1,4 @@
-modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500, format_default = "png", allow_download = TRUE, sigma_default = 400) {
+modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500, format_default = "png", allow_download = TRUE, sigma_default = 400, groupby_label = "Color cells") {
     ns <- NS(id)
     sigma_label <- tags$span(
         class = "hover-hint",
@@ -51,7 +51,7 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
                     choices = c("bottomright", "bottomleft", "topright", "topleft"),
                     selected = NULL
                 ),
-                bslib::input_switch(ns("groupby"), "CellSubtype color", value = TRUE)
+                bslib::input_switch(ns("groupby"), groupby_label, value = TRUE)
             ),
             download_panel,
             open = "always"
@@ -61,8 +61,8 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
 }
 
 
-modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.celltype, fov_choices = NULL,
-                                                     feature_default = NULL,
+modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.cell, fov_choices = NULL,
+                                                     feature_default = NULL, groupby_column = NULL,
                                                      scalebar_length = NULL, scalebar_numConv = 1, scalebar_unit = NULL,
                                                      scalebar_position_default = NULL, fov.size = NULL) {
     moduleServer(id, function(input, output, session) {
@@ -106,13 +106,7 @@ modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.c
             ignoreInit = FALSE
         )
 
-        groupby_param <- reactive({
-            req(srt())
-            if (isTRUE(input$groupby) && "CellSubtype" %in% colnames(srt()@meta.data)) {
-                return("CellSubtype")
-            }
-            NULL
-        })
+        groupby_param <- reactive(if (isTRUE(input$groupby)) groupby_column else NULL)
 
         plot_image <- reactive({
             req(srt(), input$fov, input$feature)
@@ -123,7 +117,7 @@ modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.c
                 sigma = input$sigma,
                 threshold = input$threshold,
                 group.by = groupby_param(),
-                cols = colors.celltype,
+                cols = colors.cell,
                 scalebar.length = if (isTRUE(input$scalebar)) scalebar_length else NULL,
                 scalebar.numConv = scalebar_numConv,
                 scalebar.unit = scalebar_unit,

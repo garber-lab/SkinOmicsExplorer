@@ -98,10 +98,67 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             return(df)
         })
 
+        colors.CellType <- c(
+            "Lymph" = "#e7a500",
+            "KC" = "#634F8B",
+            "MC" = "#15e18d",
+            "Mel" = "#0000dd"
+        )
+
+        colors.CellSubtype <- c(
+            "TC_unk" = "#9013FE",
+            "KC_suprabasal" = "#00acc7",
+            "KC_granular" = "#c004b9",
+            "KC_spinous" = "#a2766a",
+            "LC" = "#A35976",
+            "Melanocyte" = "#0000dd",
+            "KC_activated" = "#E8AECC",
+            "KC_basal" = "#634F8B",
+            "DC2" = "#DDCDAE",
+            "GD" = "#F5A623",
+            "NK_immature" = "#417505",
+            "Th2" = "#50E3C2",
+            "Migratory" = "#486482",
+            "CD8_GZMK" = "#F8E71C",
+            "Treg" = "#8B572A",
+            "CD4" = "#FF7F50",
+            "MC_CD14" = "#D7AABF",
+            "DC1" = "#947065",
+            "Tc17" = "#4A90E2",
+            "KC_eccrine" = "#00d3b9",
+            "NK_mature" = "#7ED321",
+            "CD8_GZMB" = "#BD10E0",
+            "MC_Tol" = "#8E7CA8",
+            "pDC" = "#84A2E0",
+            "Th1" = "#D0021B",
+            "Mast" = "#4A4A4A"
+        )
+
+        colors.Skin <- c(
+            "H" = "#3E6D95",
+            "NL" = "#59B1B2",
+            "L" = "#A53C8D"
+        )
+
+        colors.Disease <- c(
+            "HC" = "#3E6D95",
+            "CLE" = "#88A49C",
+            "DM" = "#F2BDB8",
+            "Vit" = "#BDB5B5",
+            "Pso" = "#DA9A7E"
+        )
+
+               
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
             groupby_default = "CellType",
+            groupby_colors_list = list(
+                "CellType" = colors.CellType,
+                "CellSubtype" = colors.CellSubtype,
+                "Skin" = colors.Skin,
+                "Disease" = colors.Disease
+            ),
             dataname = dataname,
             raster = FALSE
         )
@@ -121,7 +178,9 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
             subsetby_columns = c("Disease", "Skin"),
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            groupby_colors = colors.CellSubtype,
+            groupby_colors_by = "CellSubtype"
         )
 
         modServer_SeuratVlnPlot(
@@ -131,7 +190,9 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             groupby_column = "Skin",
             splitby_column = "Disease",
             subsetby_columns = c("CellSubtype"),
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            groupby_colors = colors.Skin,
+            groupby_colors_by = "Skin"
         )
 
         modServer_PseudoBulkHeatmap(

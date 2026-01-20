@@ -68,7 +68,8 @@ tabUI_fourDisease_seqfish <- function(id) {
                 bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
                     ns("image_featureplot_contour"),
                     size_perInch_default = 500, # um per inch
-                    format_default = "png"
+                    format_default = "png",
+                    groupby_label = "CellSubtype color"
                 ))
             ),
             col_width = c(6, 6)
@@ -143,7 +144,16 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             "VB268fov2" = "bottomright"
         )
 
-        colors.celltype <- c(
+        colors.CellType <- c(
+            "KC" = "#634F8B",
+            "Mel" = "#0000dd",
+            "MC" = "#15e18d",
+            "Lymph" = "#e7a500",
+            "EC" = "#d70000",
+            "Schwann" = "#5c00ab",
+            "FB" = "#005759"
+        )
+        colors.CellSubtype <- c(
             "KC_basal" = "#634F8B", #' #645473'
             "KC_cycle" = "#FFD252",
             "KC_spinous" = "#00acc7",
@@ -199,10 +209,22 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             "CD4_CCL17" = "#50E3C2"
         )
 
+        colors.disease <- c(
+            "DM" = "#F2BDB8",
+            "CLE" = "#88A49C",
+            "Pso" = "#DA9A7E",
+            "Vit" = "#BDB5B5"
+        )
+
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
             groupby_default = "CellType",
+            groupby_colors_list = list(
+                "CellType" = colors.CellType,
+                "CellSubtype" = colors.CellSubtype,
+                "Disease" = colors.disease
+            ),
             dataname = dataname,
             raster = FALSE
         )
@@ -230,7 +252,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             fov_choices = NULL,
             groupby_column = "CellSubtype",
-            groupby_colors = colors.celltype,
+            groupby_colors = colors.CellSubtype,
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
             scalebar_unit = "μm",
@@ -255,9 +277,10 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             id = "image_featureplot_contour",
             srt = srt,
             dataname = dataname,
-            colors.celltype = colors.celltype,
+            colors.cell = colors.CellSubtype,
             fov_choices = NULL,
             feature_default = "IFNG",
+            groupby_column = "CellSubtype",
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
             scalebar_unit = "μm",

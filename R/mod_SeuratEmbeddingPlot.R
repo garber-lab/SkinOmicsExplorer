@@ -35,7 +35,7 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
 }
 
 
-modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, groupby_default = NULL, dataname, groupby_colors = NULL, groupby_colors_by = NULL, raster = NULL) {
+modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, groupby_default = NULL, dataname, groupby_colors_list = NULL, raster = NULL) {
     moduleServer(id, function(input, output, session) {
         observeEvent(srt(),
             {
@@ -70,8 +70,10 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
                 raster = raster
             ) + coord_fixed(ratio = 1)
             use_colors <- NULL
-            if (!is.null(groupby_colors)) {
-                if (is.null(groupby_colors_by) || identical(input$groupby, groupby_colors_by)) {
+            if (!is.null(groupby_colors_list)) {
+                groupby_names <- names(groupby_colors_list)
+                if (length(groupby_names) > 0 && input$groupby %in% groupby_names) {
+                    groupby_colors <- groupby_colors_list[[input$groupby]]
                     meta_vals <- srt()@meta.data[[input$groupby]]
                     use_colors <- manual_scale_values(groupby_colors, meta_vals)
                 }

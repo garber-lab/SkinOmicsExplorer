@@ -43,23 +43,23 @@ ui <- fluidPage(
     nav_menu(
       "scRNA-seq",
       nav_panel("Four disease inDrop", value = "fourDisease_indrop", tabUI_fourDisease_indrop("tab_fourDisease_indrop")),
-      nav_panel("CLE GSE179633", value = "CLE_gse179633", tabUI_CLE_gse179633("tab_CLE_gse179633")),
+      nav_panel("CLE GSE179633 10x", value = "CLE_gse179633", tabUI_CLE_gse179633("tab_CLE_gse179633")),
       nav_panel("DM 10x", value = "DM_10x", tabUI_DM_10x("tab_DM_10x"))
     ),
     nav_menu(
       "Proteomics",
       nav_panel("Four disease NULISA", value = "fourDisease_nulisa", tabUI_fourDisease_nulisa("tab_fourDisease_nulisa")),
-      nav_panel("UV in vitro OLINK", value = "UV_olink", tabUI_UV_olink("tab_UV_olink"))
+      nav_panel("UV perturbation - in vitro - OLINK", value = "UV_olink", tabUI_UV_olink("tab_UV_olink"))
     ),
     nav_menu(
       "Spatial Transcriptomics",
       nav_panel("Four disease seqFISH", value = "fourDisease_seqfish", tabUI_fourDisease_seqfish("tab_fourDisease_seqfish")),
-      nav_panel("UV on CLE NL skin seqFISH", value = "UV_seqfish", tabUI_UV_seqfish("tab_UV_seqfish"))
+      nav_panel("UV perturbation - in vivo - seqFISH", value = "UV_seqfish", tabUI_UV_seqfish("tab_UV_seqfish"))
     ),
     nav_menu(
       "bulk RNA-seq",
-      nav_panel("UV in vitro bulk RNA-seq (moDC)", value = "UV_bulk_moDC", tabUI_UV_bulk_moDC("tab_UV_bulk_moDC")),
-      nav_panel("UV in vitro bulk RNA-seq (FB)", value = "UV_bulk_FB", tabUI_UV_bulk_FB("tab_UV_bulk_FB"))
+      nav_panel("UV perturbation - in vitro (moDC)", value = "UV_bulk_moDC", tabUI_UV_bulk_moDC("tab_UV_bulk_moDC")),
+      nav_panel("UV perturbation - in vitro (FB)", value = "UV_bulk_FB", tabUI_UV_bulk_FB("tab_UV_bulk_FB"))
     ),
     nav_spacer(),
     nav_panel("Abbreviations", value = "abbreviation", tabUI_abbreviations("tab_abbreviation")),

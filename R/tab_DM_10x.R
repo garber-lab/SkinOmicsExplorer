@@ -115,8 +115,7 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             groupby_default = "CellSubtype",
             dataname = dataname,
             raster = FALSE,
-            groupby_colors = colors.ic,
-            groupby_colors_by = "CellSubtype"
+            groupby_colors_list = list(CellSubtype = colors.ic)
         )
 
         modServer_SeuratFeaturePlot(
