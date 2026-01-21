@@ -101,7 +101,21 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             bulk_meta = bulk_meta,
             dataname = "UV_bulk_FB",
             groupby_column = "Biopsy",
-            splitby_column = "Treatment"
+            splitby_column = "Treatment",
+            condition_display_sets = list(
+                "All" = list(
+                    "Treatment",
+                    c("Fib_media","Mock","UV100","UV50+IFNb","IFNb","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
+                    ),
+                "KC supernatant" = list(
+                    "Treatment",
+                    c("Mock","UV100","UV50+IFNb","IFNb")
+                ),
+                "Cytokine" = list(
+                    "Treatment",
+                    c("Fib_media","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
+                )
+            )
         )
     })
 }

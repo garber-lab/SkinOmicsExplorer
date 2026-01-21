@@ -16,6 +16,7 @@ modUI_BulkHeatmap <- function(id, allow_subset = FALSE, width_default = 10, heig
         selectizeInput(ns("gene"), "Gene name:", choices = NULL, multiple = TRUE),
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
+        uiOutput(ns("condition_display_sets_ui")),
         bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
         actionButton(ns("plot"), "Plot")
     )
@@ -48,7 +49,7 @@ modUI_BulkHeatmap <- function(id, allow_subset = FALSE, width_default = 10, heig
     )
 }
 
-modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL) {
+modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, condition_display_sets = NULL, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -138,6 +139,25 @@ modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_colu
             input$splitby
         })
 
+        if (!is.null(condition_display_sets)) {
+            output$condition_display_sets_ui <- renderUI({
+                selectInput(
+                    ns("condition_display_set"),
+                    "Display conditions:",
+                    choices = names(condition_display_sets),
+                    selected = names(condition_display_sets)[1]
+                )
+            })
+        } else {
+            output$condition_display_sets_ui <- renderUI({ NULL })
+        }
+
+        conditions_for_display <- reactive({
+            if (is.null(condition_display_sets)) return(NULL)
+            req(input$condition_display_set)
+            condition_display_sets[[input$condition_display_set]]
+        })
+
         plot_heatmap <- reactive({
             plot_tb <- tb_for_plot()
             plot_md <- md_for_plot()
@@ -147,6 +167,15 @@ modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_colu
             if (length(common_cols) == 0) return(NULL)
             plot_tb <- plot_tb[, common_cols, drop = FALSE]
             plot_md <- plot_md[common_cols, , drop = FALSE]
+
+            if (!is.null(conditions_for_display())) {
+                display_conditions <- conditions_for_display()
+                condition_col <- display_conditions[[1]]
+                condition_values <- display_conditions[[2]]
+                keep_idx <- plot_md[[condition_col]] %in% condition_values
+                plot_tb <- plot_tb[, keep_idx, drop = FALSE]
+                plot_md <- plot_md[keep_idx, , drop = FALSE]
+            }
 
             HeatmapBulk(
                 plot_tb,

@@ -100,7 +100,21 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             bulk_meta = bulk_meta,
             dataname = "UV_bulk_moDC",
             groupby_column = "Biopsy",
-            splitby_column = "Treatment"
+            splitby_column = "Treatment",
+            condition_display_sets = list(
+                "All" = list(
+                    "Treatment",
+                    c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                    ),
+                "No LPS" = list(
+                    "Treatment",
+                    c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
+                ),
+                "KC supernatant" = list(
+                    "Treatment",
+                    c("Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb")
+                )
+            )
         )
     })
 }
