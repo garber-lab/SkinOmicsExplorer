@@ -160,7 +160,8 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
                 "Disease" = colors.Disease
             ),
             dataname = dataname,
-            raster = FALSE
+            raster = FALSE,
+            show_plot_button = FALSE
         )
 
         modServer_SeuratFeaturePlot(
@@ -168,7 +169,8 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             srt = srt,
             dataname = dataname,
             raster = FALSE,
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -180,7 +182,8 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             subsetby_columns = c("Disease", "Skin"),
             feature_default = "IFNG",
             groupby_colors = colors.CellSubtype,
-            groupby_colors_by = "CellSubtype"
+            groupby_colors_by = "CellSubtype",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -192,7 +195,8 @@ tabServer_fourDisease_indrop <- function(id, data_path, active_tab){
             subsetby_columns = c("CellSubtype"),
             feature_default = "IFNG",
             groupby_colors = colors.Skin,
-            groupby_colors_by = "Skin"
+            groupby_colors_by = "Skin",
+            show_plot_button = FALSE
         )
 
         modServer_PseudoBulkHeatmap(

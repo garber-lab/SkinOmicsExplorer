@@ -199,7 +199,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
                 "CellSubtype" = colors.CellSubtype
             ),
             dataname = dataname,
-            raster = FALSE
+            raster = FALSE,
+            show_plot_button = FALSE
         )
 
         modServer_SeuratFeaturePlot(
@@ -207,7 +208,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             raster = FALSE,
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -216,7 +218,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratImageDimPlot(

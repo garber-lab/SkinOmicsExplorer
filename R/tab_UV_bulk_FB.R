@@ -108,7 +108,8 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             splitby_column = NULL,
             shape_by = NULL,
             ylab = "CPM",
-            condition_display_sets = FB_condition_display_sets
+            condition_display_sets = FB_condition_display_sets,
+            show_plot_button = FALSE
         )
 
         modServer_BulkHeatmap(

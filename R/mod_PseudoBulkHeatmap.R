@@ -17,7 +17,7 @@ modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8,
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
         bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
     sidebar_content <- if (!allow_subset) {
         tagList(plot_panel, download_panel)
@@ -48,7 +48,7 @@ modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8,
 }
 
 
-modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL){
+modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL, show_plot_button = TRUE){
     splitby_column_missing <- missing(splitby_column)
     moduleServer(id, function(input, output, session){
         ns <- session$ns
@@ -62,6 +62,10 @@ modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupb
                 subsetby_columns = subsetby_columns
             )
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         tb_for_plot <- reactive({
             tb <- bulk_tb()
@@ -152,7 +156,12 @@ modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupb
             draw(hmap)
         })
 
-        output$plot_heatmap <- renderPlot(plot_heatmap(), res = 96) |> bindEvent(input$plot, tb_for_plot(), md_for_plot())
+        plot_heatmap_event <- plot_heatmap
+        if (isTRUE(show_plot_button)) {
+            plot_heatmap_event <- bindEvent(plot_heatmap_event, input$plot, tb_for_plot(), md_for_plot())
+        }
+
+        output$plot_heatmap <- renderPlot(plot_heatmap_event(), res = 96)
 
         output$plot_heatmap_download <- downloadHandler(
             filename = function(){

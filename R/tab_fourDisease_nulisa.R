@@ -64,7 +64,8 @@ tabServer_fourDisease_nulisa <- function(id, data_path, active_tab) {
             splitby_column = "Disease",
             groupby_colors = colors.by,
             splitby_colors = colors.by,
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
     })
 }

@@ -107,7 +107,8 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             groupby_colors = moDC_treatment_colors,
             shape_by = NULL,
             ylab = "CPM",
-            condition_display_sets = moDC_condition_display_sets
+            condition_display_sets = moDC_condition_display_sets,
+            show_plot_button = FALSE
         )
 
         modServer_BulkHeatmap(

@@ -15,7 +15,7 @@ modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, hei
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
         input_switch(ns("plotmean"), "Plot mean", value = T),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
     sidebar_content <- if (!allow_subset) {
         tagList(plot_panel, download_panel)
@@ -46,13 +46,17 @@ modUI_SeuratVlnPlot <- function(id, allow_subset = FALSE, width_default = 6, hei
     )
 }
 
-modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL, feature_default = NULL, groupby_colors = NULL, groupby_colors_by = NULL){
+modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, splitby_column=NULL, subsetby_columns = NULL, feature_default = NULL, groupby_colors = NULL, groupby_colors_by = NULL, show_plot_button = TRUE){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
         groupby_options <- reactiveVal(character())
         splitby_options <- reactiveVal(character())
         has_subset <- !is.null(subsetby_columns) && length(subsetby_columns) > 0
         subset_srt <- NULL
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
         if (has_subset) {
             subset_srt <- modServer_SeuratSubset(
                 id = "subset",
@@ -150,7 +154,12 @@ modServer_SeuratVlnPlot <- function(id, srt, dataname, groupby_column=NULL, spli
             return(g)
         })
 
-        output$plot_violin <- renderPlot(plot_violin(), res = 96) |> bindEvent(input$plot, srt_for_plot())
+        plot_violin_event <- plot_violin
+        if (isTRUE(show_plot_button)) {
+            plot_violin_event <- bindEvent(plot_violin_event, input$plot, srt_for_plot())
+        }
+
+        output$plot_violin <- renderPlot(plot_violin_event(), res = 96)
 
         output$plot_violin_download <- downloadHandler(
             filename = function(){

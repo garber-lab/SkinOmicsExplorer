@@ -12,7 +12,7 @@ modUI_BulkBoxPlot <- function(id,
         uiOutput(ns("splitby_ui")),
         uiOutput(ns("condition_display_sets_ui")),
         checkboxInput(ns("log2"), "log2(CPM + 1)", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
 
     download_panel <- if (isTRUE(allow_download)) {
@@ -45,7 +45,8 @@ modServer_BulkBoxPlot <- function(id,
                                      splitby_column = NULL,
                                      groupby_colors = NULL,
                                      shape_by = NULL,
-                                     ylab = "CPM") {
+                                     ylab = "CPM",
+                                     show_plot_button = TRUE) {
     splitby_column_missing <- missing(splitby_column)
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
@@ -53,6 +54,10 @@ modServer_BulkBoxPlot <- function(id,
         resolve_input <- function(x) {
             if (is.function(x)) x() else x
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         data_info <- reactive({
             cpm <- resolve_input(bulk_cpm)
@@ -220,10 +225,17 @@ modServer_BulkBoxPlot <- function(id,
 
         current_plot <- reactiveVal(ggplot2::ggplot() + ggplot2::theme_void())
 
-        observeEvent(input$plot, {
-            p <- build_plot()
-            if (!is.null(p)) current_plot(p)
-        }, ignoreNULL = FALSE)
+        if (isTRUE(show_plot_button)) {
+            observeEvent(input$plot, {
+                p <- build_plot()
+                if (!is.null(p)) current_plot(p)
+            }, ignoreNULL = FALSE)
+        } else {
+            observe({
+                p <- build_plot()
+                if (!is.null(p)) current_plot(p)
+            })
+        }
 
         output$plot_boxplot <- renderPlot(current_plot(), res = 96)
 

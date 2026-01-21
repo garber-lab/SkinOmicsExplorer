@@ -115,7 +115,8 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             groupby_default = "CellSubtype",
             dataname = dataname,
             raster = FALSE,
-            groupby_colors_list = list(CellSubtype = colors.ic)
+            groupby_colors_list = list(CellSubtype = colors.ic),
+            show_plot_button = FALSE
         )
 
         modServer_SeuratFeaturePlot(
@@ -123,7 +124,8 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             srt = srt,
             dataname = dataname,
             raster = FALSE,
-            feature_default = "IFNB1"
+            feature_default = "IFNB1",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -134,7 +136,8 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             subsetby_columns = c("Sample"),
             feature_default = "IFNB1",
             groupby_colors = colors.ic,
-            groupby_colors_by = "CellSubtype"
+            groupby_colors_by = "CellSubtype",
+            show_plot_button = FALSE
         )
 
         modServer_PseudoBulkHeatmap(

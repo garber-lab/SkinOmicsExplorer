@@ -18,7 +18,7 @@ modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default 
         uiOutput(ns("splitby_ui")),
         if (isTRUE(show_bins_toggle)) bslib::input_switch(ns("show_bins"), show_bins_label, value = show_bins_default),
         bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
     sidebar_content <- if (!allow_subset) {
         tagList(plot_panel, download_panel)
@@ -49,7 +49,7 @@ modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default 
 }
 
 
-modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE) {
+modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -62,6 +62,10 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
                 subsetby_columns = subsetby_columns
             )
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         tb_for_plot <- reactive({
             tb <- bulk_tb()
@@ -185,7 +189,12 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
             draw(hmap)
         })
 
-        output$plot_heatmap <- renderPlot(plot_heatmap(), res = 96) |> bindEvent(input$plot, tb_for_plot(), md_for_plot())
+        plot_heatmap_event <- plot_heatmap
+        if (isTRUE(show_plot_button)) {
+            plot_heatmap_event <- bindEvent(plot_heatmap_event, input$plot, tb_for_plot(), md_for_plot())
+        }
+
+        output$plot_heatmap <- renderPlot(plot_heatmap_event(), res = 96)
 
         output$plot_heatmap_download <- downloadHandler(
             filename = function() {
@@ -207,7 +216,7 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
 }
 
 
-modServer_PseudoBulkHeatmap_MCCD14 <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE) {
+modServer_PseudoBulkHeatmap_MCCD14 <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE, show_plot_button = TRUE) {
     modServer_PseudoBulkHeatmap_bin(
         id = id,
         bulk_tb = bulk_tb,
@@ -217,6 +226,7 @@ modServer_PseudoBulkHeatmap_MCCD14 <- function(id, bulk_tb, bulk_meta, dataname,
         splitby_column = splitby_column,
         subsetby_columns = subsetby_columns,
         show_bins_toggle = show_bins_toggle,
-        show_bins_default = show_bins_default
+        show_bins_default = show_bins_default,
+        show_plot_button = show_plot_button
     )
 }

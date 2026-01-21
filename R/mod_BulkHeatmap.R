@@ -18,7 +18,7 @@ modUI_BulkHeatmap <- function(id, allow_subset = FALSE, width_default = 10, heig
         uiOutput(ns("splitby_ui")),
         uiOutput(ns("condition_display_sets_ui")),
         bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
 
     sidebar_content <- if (!allow_subset) {
@@ -49,13 +49,17 @@ modUI_BulkHeatmap <- function(id, allow_subset = FALSE, width_default = 10, heig
     )
 }
 
-modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, condition_display_sets = NULL, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL) {
+modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, condition_display_sets = NULL, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
         resolve_input <- function(x) {
             if (is.function(x)) x() else x
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         has_subset <- !is.null(subsetby_columns) && length(subsetby_columns) > 0
         if (has_subset) {
@@ -187,12 +191,17 @@ modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, condition_display_sets
             )
         })
 
+        plot_heatmap_event <- plot_heatmap
+        if (isTRUE(show_plot_button)) {
+            plot_heatmap_event <- bindEvent(plot_heatmap_event, input$plot, tb_for_plot(), md_for_plot())
+        }
+
         output$plot_heatmap <- renderPlot({
-            hmap <- plot_heatmap()
+            hmap <- plot_heatmap_event()
             req(hmap)
             ComplexHeatmap::draw(hmap)
             invisible(NULL)
-        }, res = 96) |> bindEvent(input$plot, tb_for_plot(), md_for_plot())
+        }, res = 96)
 
         output$plot_heatmap_download <- downloadHandler(
             filename = function() {

@@ -16,7 +16,7 @@ modUI_NulisaBoxPlot <- function(id, width_default = 6, height_default = 3.5, for
         selectizeInput(ns("gene"), "Protein name:", choices = NULL),
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
 
     layout_sidebar(
@@ -28,11 +28,15 @@ modUI_NulisaBoxPlot <- function(id, width_default = 6, height_default = 3.5, for
     )
 }
 
-modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, splitby_column = NULL, groupby_colors = NULL, splitby_colors = NULL, feature_default = NULL) {
+modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, splitby_column = NULL, groupby_colors = NULL, splitby_colors = NULL, feature_default = NULL, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
         groupby_options <- reactiveVal(character())
         splitby_options <- reactiveVal(character())
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         observe({
             df <- nls()
@@ -124,14 +128,19 @@ modServer_NulisaBoxPlot <- function(id, nls, dataname, groupby_column = NULL, sp
             apply_split_colors(plot_obj, resolve_color(splitby_colors, splitby_param()), split_values)
         })
 
+        plot_boxplot_event <- plot_boxplot
+        if (isTRUE(show_plot_button)) {
+            plot_boxplot_event <- bindEvent(plot_boxplot_event, input$plot, nls())
+        }
+
         output$plot_boxplot <- renderPlot({
-            plot_obj <- plot_boxplot()
+            plot_obj <- plot_boxplot_event()
             if (inherits(plot_obj, "gtable") || inherits(plot_obj, "grob")) {
                 grid::grid.draw(plot_obj)
             } else {
                 plot_obj
             }
-        }, res = 96) |> bindEvent(input$plot, nls())
+        }, res = 96)
 
         output$plot_boxplot_download <- downloadHandler(
             filename = function() {

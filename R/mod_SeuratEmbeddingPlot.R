@@ -25,7 +25,7 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
                 ),
                 bslib::input_switch(ns("label"), "Label in plot", value = T),
                 bslib::input_switch(ns("legend"), "Show legend", value = F),
-                actionButton(ns("plot"), "Plot")
+                uiOutput(ns("plot_button_ui"))
             ),
             download_panel,
             open = "always"
@@ -35,8 +35,14 @@ modUI_SeuratEmbeddingPlot <- function(id, width_default = 6, height_default = 6,
 }
 
 
-modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, groupby_default = NULL, dataname, groupby_colors_list = NULL, raster = NULL) {
+modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduction_choices = NULL, groupby_default = NULL, dataname, groupby_colors_list = NULL, raster = NULL, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
+        ns <- session$ns
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
+
         observeEvent(srt(),
             {
                 req(srt())
@@ -89,7 +95,12 @@ modServer_SeuratEmbeddingPlot <- function(id, srt, groupby_column = NULL, reduct
             return(g)
         })
 
-        output$plot_embedding <- renderPlot(plot_embedding(), res = 96) |> bindEvent(input$plot)
+        plot_embedding_event <- plot_embedding
+        if (isTRUE(show_plot_button)) {
+            plot_embedding_event <- bindEvent(plot_embedding_event, input$plot)
+        }
+
+        output$plot_embedding <- renderPlot(plot_embedding_event(), res = 96)
 
         output$plot_embedding_download <- downloadHandler(
             filename = function() {
