@@ -14,7 +14,7 @@ tabUI_UV_bulk_moDC <- function(id) {
                         tags$strong("Conditions"),
                         tags$ul(
                             tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
-                            tags$li(tags$strong("KC_media:"), " keratinocyte media"),
+                            tags$li(tags$strong("DC_media:"), " keratinocyte media"),
                             tags$li(tags$strong("UV50:"), " supernatant from keratinocyte treated with 50 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
@@ -62,7 +62,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
                 )
                 bulk_meta_raw$Treatment <- factor(
                     bulk_meta_raw$Treatment,
-                    levels = c("Mock", "KC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                    levels = c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 )
                 bulk_cpm(bulk_cpm_raw)
                 bulk_meta(bulk_meta_raw)
@@ -71,7 +71,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
         
         moDC_treatment_colors <- c(
             "Mock" = "#e6bcb4",
-            "KC_media" = "#ff7f0e",
+            "DC_media" = "#ff7f0e",
             "UV50" = "#893b7f",
             "UV100" = "#a33453",
             "UV50+IFNb" = "#debc40",
