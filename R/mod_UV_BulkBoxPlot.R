@@ -182,7 +182,7 @@ modServer_UV_BulkBoxPlot <- function(id,
                 shape.by = shape_by_use,
                 group.color = colors,
                 log2_scale = isTRUE(input$log2),
-                ylab = ylab
+                ylab = paste0(gene, " ", ylab)
             )
         }
 
