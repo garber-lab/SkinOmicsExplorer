@@ -81,6 +81,21 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             "LPS" = "#999999"
         )
 
+        moDC_condition_display_sets <- list(
+            "All" = list(
+                "Treatment",
+                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                ),
+            "No LPS" = list(
+                "Treatment",
+                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
+            ),
+            "KC supernatant" = list(
+                "Treatment",
+                c("Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb")
+            )
+        )
+
         modServer_UV_BulkBoxPlot(
             id = "bulk_boxplot",
             bulk_cpm = bulk_cpm,
@@ -91,7 +106,8 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             splitby_column = NULL,
             groupby_colors = moDC_treatment_colors,
             shape_by = NULL,
-            ylab = "CPM"
+            ylab = "CPM",
+            condition_display_sets = moDC_condition_display_sets
         )
 
         modServer_BulkHeatmap(
@@ -101,20 +117,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             dataname = "UV_bulk_moDC",
             groupby_column = "Biopsy",
             splitby_column = "Treatment",
-            condition_display_sets = list(
-                "All" = list(
-                    "Treatment",
-                    c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
-                    ),
-                "No LPS" = list(
-                    "Treatment",
-                    c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
-                ),
-                "KC supernatant" = list(
-                    "Treatment",
-                    c("Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb")
-                )
-            )
+            condition_display_sets = moDC_condition_display_sets
         )
     })
 }
