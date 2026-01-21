@@ -64,14 +64,26 @@ tabUI_UV_seqfish <- function(id) {
                     format_default = "png"
                 ))
             ),
+            # bslib::card(
+            #     bslib::card_header("Spatial feature Plot (contour)"),
+            #     bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
+            #         ns("image_featureplot_contour"),
+            #         size_perInch_default = 500, # um per inch
+            #         format_default = "png",
+            #         sigma_default = 100
+            #     ))
+            # ),
             bslib::card(
-                bslib::card_header("Spatial feature Plot (contour)"),
-                bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
-                    ns("image_featureplot_contour"),
-                    size_perInch_default = 500, # um per inch
-                    format_default = "png",
-                    sigma_default = 100
-                ))
+                bslib::card_header("Violin plot for normalized gene expression in all conditions"),
+                bslib::card_body(
+                    modUI_SeuratVlnPlot(
+                        ns("vlnplot_condition"),
+                        width_default = 6,
+                        height_default = 4.5,
+                        format_default = "png",
+                        allow_subset = FALSE
+                    )
+                )
             ),
             col_width = c(6, 6)
         )
@@ -273,6 +285,16 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             splitby_column = "CellType",
             subsetby_columns = c("Condition"),
             show_bins_toggle = TRUE
+        )
+
+        modServer_SeuratVlnPlot(
+            id = "vlnplot_condition",
+            srt = srt,
+            dataname = dataname,
+            groupby_column = "Condition",
+            subsetby_columns = c("CellSubtype"),
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
     })
 }
