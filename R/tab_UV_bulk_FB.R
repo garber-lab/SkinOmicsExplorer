@@ -4,7 +4,7 @@ tabUI_UV_bulk_FB <- function(id) {
         bslib::layout_columns(
             bslib::card(
                 bslib::card_body(
-                    modUI_UV_BulkBoxPlot(ns("bulk_boxplot"))
+                    modUI_BulkBoxPlot(ns("bulk_boxplot"))
                 )
             ),
             bslib::card(
@@ -97,7 +97,7 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             )
         )
 
-        modServer_UV_BulkBoxPlot(
+        modServer_BulkBoxPlot(
             id = "bulk_boxplot",
             bulk_cpm = bulk_cpm,
             bulk_meta = bulk_meta,

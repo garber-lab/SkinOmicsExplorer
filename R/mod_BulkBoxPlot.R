@@ -1,4 +1,4 @@
-modUI_UV_BulkBoxPlot <- function(id,
+modUI_BulkBoxPlot <- function(id,
                                  width_default = 4,
                                  height_default = 3.5,
                                  format_default = "pdf",
@@ -35,7 +35,7 @@ modUI_UV_BulkBoxPlot <- function(id,
     )
 }
 
-modServer_UV_BulkBoxPlot <- function(id,
+modServer_BulkBoxPlot <- function(id,
                                      bulk_cpm,
                                      bulk_meta,
                                      condition_display_sets = NULL,
