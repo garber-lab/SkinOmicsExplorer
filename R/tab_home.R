@@ -39,7 +39,7 @@ dataset_card_content <- function(title, tagline, specs=NULL, tech) {
 # Pre-defined dataset cards that can be dropped into the layout by ID.
 tab_home_cards <- list(
   fourDisease_indrop = dataset_card_content(
-    title = "Four disease inDrop",
+    title = "Four disease - inDrop",
     tagline = "All samples were processed under a uniform protocol, minimizing batch effects and enabling robust cross-disease comparisons.",
     specs = c(
       "Cohort composition" = "5 DM, 4 CLE, 5 psoriasis, 19 vitiligo, 11 healthy controls",
@@ -49,7 +49,7 @@ tab_home_cards <- list(
     tech = "scRNA-seq · inDrop"
   ),
   CLE_gse179633 = dataset_card_content(
-    title = "CLE GSE179633 10x",
+    title = "CLE GSE179633 - 10x",
     tagline = "Re-clustering of a deeply sequenced public CLE dataset (GSE179633).",
     specs = c(
       "Cohort composition" = "Epidermal (3 HC,5 DLE and 5 SLE); Dermal (4 HC,5 DLE and 7 SLE)",
@@ -60,7 +60,7 @@ tab_home_cards <- list(
     tech = "scRNA-seq · 10x Genomics"
   ),
   DM_10x = dataset_card_content(
-    title = "DM 10x",
+    title = "DM - 10x",
     tagline = "Myeloid cells of three DM samples with high IFNβ.",
     specs = c(
       "Cohort composition" = "3 DM",
@@ -70,7 +70,7 @@ tab_home_cards <- list(
     tech = "scRNA-seq · 10x Genomics"
   ),
   fourDisease_nulisa = dataset_card_content(
-    title = "Four disease NULISA",
+    title = "Four disease - NULISA",
     tagline = "Protein levels in interstitial fluid across four autoimmune skin diseases.",
     specs = c(
       "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls", # !!! fill in the number
@@ -81,7 +81,7 @@ tab_home_cards <- list(
     tech = "Proteomics · NULISA"
   ),
   UV_olink = dataset_card_content(
-    title = "UV perturbation - in vitro - OLINK",
+    title = "UV perturbation (in vitro) - OLINK",
     tagline = "Proteins secreted into supernatant by UVB-irradiated keratinocytes (KCs) pretreated with or without IFNβ. Subsequently, dendritic cells (DCs) were incubated with KC supernatants, and proteins in DC supernatants were then measured.",
     specs = c(
       "Cell type" = "Keratinocyte cell line N/TERT2G, monocyte-derived DCs from PBMCs",
@@ -90,7 +90,7 @@ tab_home_cards <- list(
     tech = "Proteomics · Olink"
   ),
   fourDisease_seqfish = dataset_card_content(
-    title = "Four disease seqFISH",
+    title = "Four disease - seqFISH",
     tagline = "Single-cell spatial transcriptomics of lesional skin from DM, CLE, psoriasis and vitiligo.",
     specs = c(
       "Cohort composition" = "2 DM, 2 CLE, 2 psoriasis, 1 vitiligo",
@@ -101,7 +101,7 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_seqfish = dataset_card_content(
-    title = "UV perturbation - in vivo - seqFISH",
+    title = "UV perturbation (in vivo) - seqFISH",
     tagline = "UVB irradiation on CLE non-lesional (NL) skin before and after Anifrolumab (type I interferon receptor antagonist) treatment.",
     specs = c(
       "Cohort composition" = "1 CLE",
@@ -113,17 +113,17 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_bulk_moDC = dataset_card_content(
-    title = "UV perturbation - in vitro - bulk RNA-seq (moDC)",
-    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC media from UV conditions (UV50/UV100 ± IFNβ) plus direct IFNβ and LPS stimulation.",
+    title = "UV perturbation (in vitro) - bulk RNA-seq (moDC)",
+    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC supernatant from UV conditions (UV50/UV100 ± IFNβ) plus direct IFNβ and LPS stimulation.",
     specs = c(
       "Cell type" = "Monocyte-derived DCs from PBMCs",
-      "Treatments" = "Mock, KC_media, UV50, UV100, UV50+IFNβ, UV100+IFNβ, IFNβ, Direct IFNβ, LPS",
+      "Treatments" = "Mock, DC_media, UV50, UV100, UV50+IFNβ, UV100+IFNβ, IFNβ, Direct IFNβ, LPS",
       "Sampling method" = "Cell pellet"
     ),
     tech = "Transcriptomics · bulk RNA-seq"
   ),
   UV_bulk_FB = dataset_card_content(
-    title = "UV perturbation - in vitro - bulk RNA-seq (FB)",
+    title = "UV perturbation (in vitro) - bulk RNA-seq (FB)",
     tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
     specs = c(
       "Cell type" = "Pannus-derived primary fibroblasts",
