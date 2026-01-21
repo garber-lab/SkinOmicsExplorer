@@ -206,10 +206,30 @@ tabUI_home <- function(id) {
             bslib::card(tab_home_cards[["DM_10x"]]),
             width = 1/2
           ),
-          tags$h5(class = "mt-4", "UV perturbation series"),
+          tags$h5(class = "mt-4", "UV perturbation series (in vivo)"),
           layout_column_wrap(
-            bslib::card(tab_home_cards[["UV_olink"]]),
+            tags$div(
+              class = "mb-3",
+              tags$img(
+                src = "assets/scheme_UV_invivo.png",
+                alt = "UV perturbation series (in vivo) schematic",
+                class = "img-fluid"
+              )
+            ),
             bslib::card(tab_home_cards[["UV_seqfish"]]),
+            width = 1/2
+          ),
+          tags$h5(class = "mt-4", "UV perturbation series (in vitro)"),
+          layout_column_wrap(
+            tags$div(
+              class = "mb-3",
+              tags$img(
+                src = "assets/scheme_UV_invitro.png",
+                alt = "UV perturbation series (in vitro) schematic",
+                class = "img-fluid"
+              )
+            ),
+            bslib::card(tab_home_cards[["UV_olink"]]),
             bslib::card(tab_home_cards[["UV_bulk_moDC"]]),
             bslib::card(tab_home_cards[["UV_bulk_FB"]]),
             width = 1/2
