@@ -81,7 +81,7 @@ tabUI_UV_seqfish <- function(id) {
                         width_default = 6,
                         height_default = 4.5,
                         format_default = "png",
-                        allow_subset = FALSE
+                        allow_subset = TRUE
                     )
                 )
             ),
@@ -292,6 +292,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             groupby_column = "Condition",
+            splitby_column = character(0),
             subsetby_columns = c("CellSubtype"),
             feature_default = "IFNG",
             show_plot_button = FALSE

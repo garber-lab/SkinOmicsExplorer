@@ -14,23 +14,23 @@ dataset_card_content <- function(title, tagline, specs=NULL, tech) {
       spec_items <- lapply(seq_along(specs), function(i) {
         spec_value <- specs[[i]]
         spec_text <- if (length(spec_value) > 1) paste(spec_value, collapse = ", ") else spec_value
-        tags$small(
+        htmltools::tags$small(
           class = "d-block lh-sm",
-          tagList(tags$strong(names(specs)[i]), ": ", spec_text)
+          htmltools::tagList(htmltools::tags$strong(names(specs)[i]), ": ", spec_text)
         )
       })
       spec_block <- do.call(
-        tags$div,
+        htmltools::tags$div,
         c(list(class = "mt-2 lh-sm"), spec_items)
       )
       body <- append(body, list(spec_block))
     } else {
-      body <- append(body, list(tags$small(specs)))
+      body <- append(body, list(htmltools::tags$small(specs)))
     }
   }
-  body <- append(body, list(tags$small(class = "text-muted", tech)))
+  body <- append(body, list(htmltools::tags$small(class = "text-muted", tech)))
 
-  tagList(
+  htmltools::tagList(
     bslib::card_header(title),
     bslib::card_body(body)
   )
@@ -139,22 +139,22 @@ tab_home_cards <- list(
 tabUI_home <- function(id) {
   ns <- NS(id)
 
-  tagList(
+  htmltools::tagList(
     bslib::card(
       bslib::card_header("Introduction"),
-      bslib::card_body(tags$p(
+      bslib::card_body(htmltools::tags$p(
         "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset and link you to the corresponding analysis modules."
       ))
     ),
     bslib::card(
       bslib::card_header("Publication"),
       bslib::card_body(
-        tags$h5(
+        htmltools::tags$h5(
           class = "mb-2",
           "A Spatially Coordinated Keratinocyte-Fibroblast Circuit Recruits MMP9+ Myeloid Cells to Drive IFN-I-Driven Inflammation in Photosensitive Autoimmunity"
         ),
-        tags$small(class = "text-muted", "Abstract"),
-        tags$p(
+        htmltools::tags$small(class = "text-muted", "Abstract"),
+        htmltools::tags$p(
           paste(
             "Photosensitivity is central to cutaneous lupus erythematosus (CLE) and dermatomyositis (DM),",
             "but the mechanisms linking UVB exposure to tissue-specific autoimmunity are poorly defined.",
@@ -177,7 +177,7 @@ tabUI_home <- function(id) {
     ),
     bslib::card(
       bslib::card_header("Citation"),
-      bslib::card_body(tags$p(
+      bslib::card_body(htmltools::tags$p(
         "" # !!! Add citation info here
       ))
     ),
