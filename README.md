@@ -42,10 +42,10 @@ to enable interactive visualization of gene and protein expression across diseas
 SkinOmicsExplorer builds on custom visualization and analysis frameworks developed in:
 
 - **AddOns** — reusable Shiny modules and visualization utilities  
-  👉 https://github.com/mgarber/AddOns  
+   https://github.com/mgarber/AddOns  
 
 - **scSpatial** — spatial transcriptomics processing and visualization tools  
-  👉 https://github.com/Yuqing66/scSpatial  
+   https://github.com/Yuqing66/scSpatial  
 
 These repositories provide core functionality for interactive plotting, spatial rendering, and multi-omics integration.
 
