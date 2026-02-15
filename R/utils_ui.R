@@ -475,6 +475,10 @@ HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, groupby.order =
     agg_tb_norm[, is_bin] <- sweep(agg_tb_norm[, is_bin, drop = FALSE], 2, bin_counts[cond_key_bin], "*")
   }
 
+  if (cluster_genes){
+    agg_tb_norm <- agg_tb_norm[apply(agg_tb_norm, 1, function(x) any(x > 0)), , drop = FALSE]
+  }
+
   has_splitby <- !is.null(splitby) && splitby %in% colnames(agg_md)
   bin_groups <- list()
   if (any(is_bin)) {
