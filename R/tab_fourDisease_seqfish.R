@@ -216,6 +216,21 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             "Vit" = "#BDB5B5"
         )
 
+        fov.name.display <- c(
+            "DM_sample1_fov1"  = "UV109fov1",
+            "DM_sample1_fov2"  = "UV109fov2",
+            "DM_sample2_fov1"  = "UV253fov1",
+            "DM_sample2_fov2"  = "UV253fov2",
+            "CLE_sample1_fov1" = "UV243fov1",
+            "CLE_sample2_fov1" = "UV260fov1",
+            "CLE_sample2_fov2" = "UV260fov2",
+            "Pso_sample1_fov1" = "UV238fov1",
+            "Pso_sample1_fov2" = "UV238fov2",
+            "Pso_sample2_fov1" = "UV239fov1",
+            "Pso_sample2_fov2" = "UV239fov2",
+            "Vit_sample1_fov1" = "VB268fov1",
+        )
+
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
@@ -254,6 +269,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             groupby_column = "CellSubtype",
             groupby_colors = colors.CellSubtype,
             scalebar_length = 4854.369,
@@ -268,6 +284,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.conv,
             feature_default = "IFNG",
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,
@@ -282,6 +299,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             colors.cell = colors.CellSubtype,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             groupby_column = "CellSubtype",
             scalebar_length = 4854.369,

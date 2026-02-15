@@ -202,6 +202,12 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             "CD4_CCL17" = "#50E3C2"
         )
 
+        fov.name.display <- c(
+            "NL" = "UV258fov1",
+            "NL_UV" = "UV258fov2",
+            "NL_UV_anif" = "UV258fov3"
+        )
+
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
@@ -239,6 +245,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             groupby_column = "CellSubtype",
             groupby_colors = colors.CellSubtype,
             scalebar_length = 485.437,
@@ -253,6 +260,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             scalebar_length = 485.437,
             scalebar_numConv = 1.03,
@@ -267,6 +275,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             colors.cell = colors.CellSubtype,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             groupby_column = "CellSubtype",
             scalebar_length = 485.437,

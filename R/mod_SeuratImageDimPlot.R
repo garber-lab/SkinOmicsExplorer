@@ -51,7 +51,7 @@ modUI_SeuratImageDimPlot <- function(id, size_perInch_default = 500, format_defa
 }
 
 
-modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, groupby_column = NULL, groupby_colors = NULL,
+modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, fov_choices_name = NULL, groupby_column = NULL, groupby_colors = NULL,
                                          scalebar_length = NULL, scalebar_numConv = 1, scalebar_unit = NULL,
                                          scalebar_position_default = NULL, fov.size = NULL) {
     moduleServer(id, function(input, output, session) {
@@ -63,6 +63,9 @@ modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, 
             {
                 req(srt())
                 fovs <- if (!is.null(fov_choices)) fov_choices else names(srt()@images)
+                if (!is.null(fov_choices_name)) {
+                    names(fovs) <- names(fov_choices_name)[match(fovs, fov_choices_name)]
+                }
                 updateSelectInput(session, "fov", choices = fovs)
 
                 groupbys <- if (!is.null(groupby_column)) {

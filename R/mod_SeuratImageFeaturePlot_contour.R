@@ -61,7 +61,7 @@ modUI_SeuratImageFeaturePlot_contour <- function(id, size_perInch_default = 500,
 }
 
 
-modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.cell, fov_choices = NULL,
+modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.cell, fov_choices = NULL, fov_choices_name = NULL,
                                                      feature_default = NULL, groupby_column = NULL,
                                                      scalebar_length = NULL, scalebar_numConv = 1, scalebar_unit = NULL,
                                                      scalebar_position_default = NULL, fov.size = NULL) {
@@ -70,6 +70,9 @@ modServer_SeuratImageFeaturePlot_contour <- function(id, srt, dataname, colors.c
             {
                 req(srt())
                 fovs <- if (!is.null(fov_choices)) fov_choices else names(srt()@images)
+                if (!is.null(fov_choices_name)) {
+                    names(fovs) <- names(fov_choices_name)[match(fovs, fov_choices_name)]
+                }
                 updateSelectInput(session, "fov", choices = fovs)
                 feature_choices <- rownames(srt())
                 feature_selected <- if (!is.null(feature_default) && feature_default %in% feature_choices) {

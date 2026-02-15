@@ -38,7 +38,7 @@ modUI_SeuratImageFeaturePlot <- function(id, size_perInch_default = 500, format_
 }
 
 
-modServer_SeuratImageFeaturePlot <- function(id, srt, dataname, fov_choices = NULL,
+modServer_SeuratImageFeaturePlot <- function(id, srt, dataname, fov_choices = NULL, fov_choices_name = NULL,
                                              feature_default = NULL,
                                              scalebar_length = NULL, scalebar_numConv = 1, scalebar_unit = NULL,
                                              scalebar_position_default = NULL, fov.size = NULL) {
@@ -48,6 +48,9 @@ modServer_SeuratImageFeaturePlot <- function(id, srt, dataname, fov_choices = NU
             {
                 req(srt())
                 fovs <- if (!is.null(fov_choices)) fov_choices else names(srt()@images)
+                if (!is.null(fov_choices_name)){
+                    names(fovs) <- names(fov_choices_name)[match(fovs, fov_choices_name)]
+                }
                 updateSelectInput(session, "fov", choices = fovs)
                 gene_choices <- rownames(srt())
                 gene_selected <- if (!is.null(feature_default) && feature_default %in% gene_choices) {
