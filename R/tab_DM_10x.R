@@ -42,7 +42,7 @@ tabUI_DM_10x <- function(id){
                         ns("pseudoBulk_heatmap"),
                         width_default = 4,
                         height_default = 4,
-                        allow_subset = TRUE
+                        allow_subset = FALSE
                     )
                 )
             ),
@@ -144,8 +144,7 @@ tabServer_DM_10x <- function(id, data_path, active_tab){
             bulk_meta = bulk_meta,
             dataname = dataname,
             groupby_column = "CellSubtype",
-            splitby_column = NULL,
-            subsetby_columns = c("CellSubtype")
+            splitby_column = NULL
         )
         invisible(list(srt = srt))
     })
