@@ -40,7 +40,7 @@ tabUI_UV_seqfish <- function(id) {
                 modUI_PseudoBulkHeatmap_bin(
                     ns("pseudoBulk_heatmap"),
                     width_default = 16,
-                    height_default = 6,
+                    height_default = 5,
                     allow_subset = TRUE,
                     show_bins_toggle = TRUE
                 )

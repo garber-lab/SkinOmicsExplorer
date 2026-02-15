@@ -40,7 +40,7 @@ tabUI_fourDisease_seqfish <- function(id) {
                 modUI_PseudoBulkHeatmap_bin(
                     ns("pseudoBulk_heatmap"),
                     width_default = 16,
-                    height_default = 6,
+                    height_default = 5,
                     allow_subset = TRUE
                 )
             )
@@ -227,7 +227,8 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             "Pso_sample1_fov2" = "UV238fov2",
             "Pso_sample2_fov1" = "UV239fov1",
             "Pso_sample2_fov2" = "UV239fov2",
-            "Vit_sample1_fov1" = "VB268fov1"
+            "Vit_sample1_fov1" = "VB268fov1",
+            "Vit_sample1_fov2" = "VB268fov2"
         )
 
         modServer_SeuratEmbeddingPlot(
@@ -283,7 +284,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
-            fov_choices_name = fov.name.conv,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             scalebar_length = 4854.369,
             scalebar_numConv = 0.103,

@@ -108,9 +108,9 @@ modServer_SeuratImageDimPlot <- function(id, srt, dataname, fov_choices = NULL, 
                     new_height <- round(fov_dims[["height"]] / input$size_perInch, 2)
                     # Add 1 inch for legend if shown
                     if (isTRUE(input$legend) && isTRUE(input$concise.legend)) {
-                        new_width <- new_width + 1
+                        new_width <- new_width + 2
                     } else if (isTRUE(input$legend) && isFALSE(input$concise.legend)) {
-                        new_width <- new_width + 3
+                        new_width <- new_width + 4
                     }
                     updateNumericInput(session, "width", value = new_width)
                     updateNumericInput(session, "height", value = new_height)
