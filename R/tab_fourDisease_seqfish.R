@@ -228,7 +228,7 @@ tabServer_fourDisease_seqfish <- function(id, data_path, active_tab) {
             "Pso_sample1_fov2" = "UV238fov2",
             "Pso_sample2_fov1" = "UV239fov1",
             "Pso_sample2_fov2" = "UV239fov2",
-            "Vit_sample1_fov1" = "VB268fov1",
+            "Vit_sample1_fov1" = "VB268fov1"
         )
 
         modServer_SeuratEmbeddingPlot(

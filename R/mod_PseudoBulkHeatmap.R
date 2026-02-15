@@ -1,11 +1,10 @@
-modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, format_default = "pdf", allow_download = TRUE){
+modUI_PseudoBulkHeatmap <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, allow_download = TRUE){
     ns <- NS(id)
     
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
             inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
             inlineInput("Plot height:", numericInput(ns("height"),NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
-            inlineInput("File format:", selectInput(ns("format"),NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "100px"),
             downloadButton(ns("plot_heatmap_download"), "Download")
         )
     } else {
@@ -172,10 +171,12 @@ modServer_PseudoBulkHeatmap <- function(id, bulk_tb, bulk_meta, dataname, groupb
                     "Heatmap_",dataname,
                     "_groupby",groupby_str,
                     ifelse(is.null(splitby_str), "", paste0("_splitby",splitby_str)),
-                    ".",input$format)
+                    ".pdf")
             },
             content = function(file){
-                ggsave(filename = file, plot = plot_heatmap(), width = input$width, height = input$height, dpi = 300)
+                pdf(file, width = input$width, height = input$height)
+                draw(plot_heatmap())
+                dev.off()
             }
         )
     })

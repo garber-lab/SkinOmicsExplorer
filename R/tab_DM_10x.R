@@ -42,7 +42,6 @@ tabUI_DM_10x <- function(id){
                         ns("pseudoBulk_heatmap"),
                         width_default = 6,
                         height_default = 10,
-                        format_default = "pdf",
                         allow_subset = TRUE
                     )
                 )

@@ -40,8 +40,8 @@ tabUI_fourDisease_indrop <- function(id){
                 bslib::card_body(
                     modUI_SeuratVlnPlot(
                         ns("vlnplot_skin_disease"),
-                        width_default = 6,
-                        height_default = 4.5,
+                        width_default = 5,
+                        height_default = 4,
                         format_default = "png",
                         allow_subset = TRUE
                         )
@@ -53,8 +53,7 @@ tabUI_fourDisease_indrop <- function(id){
                     modUI_PseudoBulkHeatmap(
                         ns("pseudoBulk_heatmap"),
                         width_default = 6,
-                        height_default = 10,
-                        format_default = "pdf",
+                        height_default = 4,
                         allow_subset = TRUE
                     )
                 )
