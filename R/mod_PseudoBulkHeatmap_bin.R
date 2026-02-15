@@ -1,11 +1,10 @@
-modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, format_default = "pdf", allow_download = TRUE, show_bins_toggle = FALSE, show_bins_default = TRUE, show_bins_label = "Show transition") {
+modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, allow_download = TRUE, show_bins_toggle = FALSE, show_bins_default = TRUE, show_bins_label = "Show transition") {
     ns <- NS(id)
 
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
             inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
             inlineInput("Plot height:", numericInput(ns("height"), NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
-            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "100px"),
             downloadButton(ns("plot_heatmap_download"), "Download")
         )
     } else {
@@ -205,28 +204,16 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
                     "Heatmap_", dataname,
                     "_groupby", groupby_str,
                     ifelse(is.null(splitby_str), "", paste0("_splitby", splitby_str)),
-                    ".", input$format
+                    ".pdf"
                 )
             },
             content = function(file) {
-                ggsave(filename = file, plot = plot_heatmap(), width = input$width, height = input$height, dpi = 300)
+                pdf(file, width = input$width, height = input$height)
+                plot_heatmap()
+                dev.off()
             }
         )
     })
 }
 
 
-modServer_PseudoBulkHeatmap_MCCD14 <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE, show_plot_button = TRUE) {
-    modServer_PseudoBulkHeatmap_bin(
-        id = id,
-        bulk_tb = bulk_tb,
-        bulk_meta = bulk_meta,
-        dataname = dataname,
-        groupby_column = groupby_column,
-        splitby_column = splitby_column,
-        subsetby_columns = subsetby_columns,
-        show_bins_toggle = show_bins_toggle,
-        show_bins_default = show_bins_default,
-        show_plot_button = show_plot_button
-    )
-}

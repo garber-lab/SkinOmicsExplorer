@@ -41,7 +41,6 @@ tabUI_UV_seqfish <- function(id) {
                     ns("pseudoBulk_heatmap"),
                     width_default = 16,
                     height_default = 6,
-                    format_default = "pdf",
                     allow_subset = TRUE,
                     show_bins_toggle = TRUE
                 )

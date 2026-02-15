@@ -27,8 +27,8 @@ tabUI_CLE_gse179633 <- function(id){
             bslib::card_body(
                 modUI_SeuratVlnPlot(
                     ns("vlnplot_celltype"),
-                    width_default = 15,
-                    height_default = 4.5,
+                    width_default = 23,
+                    height_default = 5,
                     format_default = "png",
                     allow_subset = TRUE
                 )
@@ -39,9 +39,8 @@ tabUI_CLE_gse179633 <- function(id){
             bslib::card_body(
                 modUI_PseudoBulkHeatmap_bin(
                     ns("pseudoBulk_heatmap2"),
-                    width_default = 6,
-                    height_default = 10,
-                    format_default = "pdf",
+                    width_default = 14,
+                    height_default = 5,
                     allow_subset = TRUE,
                     show_bins_toggle = TRUE,
                     show_bins_label = "Show transition"
@@ -54,8 +53,8 @@ tabUI_CLE_gse179633 <- function(id){
                 bslib::card_body(
                     modUI_SeuratVlnPlot(
                         ns("vlnplot_tissueType_disease"),
-                        width_default = 6,
-                        height_default = 4.5,
+                        width_default = 4,
+                        height_default = 4,
                         format_default = "png",
                         allow_subset = FALSE
                     )
@@ -66,9 +65,8 @@ tabUI_CLE_gse179633 <- function(id){
                 bslib::card_body(
                     modUI_PseudoBulkHeatmap_bin(
                         ns("pseudoBulk_heatmap"),
-                        width_default = 6,
-                        height_default = 10,
-                        format_default = "pdf",
+                        width_default = 4,
+                        height_default = 3,
                         allow_subset = TRUE
                     )
                 )
