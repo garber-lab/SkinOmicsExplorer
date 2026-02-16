@@ -330,6 +330,10 @@ HeatmapBulk <- function(tb_cpm, md, genes = NULL, groupby, groupby.order = NULL,
     tb_cpm <- tb_cpm[genes, , drop = FALSE]
   }
 
+  if (cluster_genes) {
+    tb_cpm <- tb_cpm[apply(tb_cpm, 1, function(x) any(x > 0)), , drop = FALSE]
+  }
+
   if (!is.null(groupby.order) && groupby %in% colnames(md)) {
     md[[groupby]] <- factor(md[[groupby]], levels = groupby.order)
   }
