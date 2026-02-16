@@ -44,7 +44,7 @@ tabUI_abbreviations <- function(id) {
     )
 
     cell_subtype_items <- c(
-        "KC_* - Keratinocyte subtypes (basal, spinous, granular, bulge, eccrine, sheath, etc.)",
+        "KC_* - Keratinocyte subtypes",
         "FB_* - Fibroblast subtypes",
         "EC_* - Endothelial subtypes",
         "MC_* - Myeloid cell subtypes",

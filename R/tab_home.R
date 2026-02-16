@@ -73,7 +73,7 @@ tab_home_cards <- list(
     title = "Four disease - NULISA",
     tagline = "Protein levels in interstitial fluid across four autoimmune skin diseases.",
     specs = c(
-      "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls", # !!! fill in the number
+      "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls",
       "Sampling method" = "Suction blister fluid",
       "Skin type" = "Lesional, non-lesional, healthy skin",
       "Panel" = "NULISAseq Inflammation Panel 250 Targets"
@@ -124,7 +124,7 @@ tab_home_cards <- list(
   ),
   UV_bulk_FB = dataset_card_content(
     title = "UV perturbation (in vitro) - bulk RNA-seq (FB)",
-    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
+    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned KC media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
     specs = c(
       "Cell type" = "Pannus-derived primary fibroblasts",
       "Treatments" = "Fib_media, Mock, UV100, UV50+IFNβ, IFNβ, Direct IFNβ, Direct IFNγ, Direct TNF, Direct IL-1",
@@ -143,7 +143,7 @@ tabUI_home <- function(id) {
     bslib::card(
       bslib::card_header("Introduction"),
       bslib::card_body(htmltools::tags$p(
-        "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset and link you to the corresponding analysis modules."
+        "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset."
       ))
     ),
     bslib::card(
