@@ -65,6 +65,7 @@ VlnPlot.xlabel <- function(
     log_scale = FALSE,
     colors = NULL,
     split.by = NULL,
+    cells = NULL,
     spread = NULL,
     jitter_pts = TRUE,
     plot_mean = TRUE,
@@ -77,12 +78,21 @@ VlnPlot.xlabel <- function(
   split.by <- split.by %||% character(0)
   meta_cols <- c(group.by, split.by)
   meta_cols <- meta_cols[meta_cols %in% colnames(object@meta.data)]
-  df <- object@meta.data[, meta_cols, drop = FALSE]
+  if (!is.null(cells)) {
+    cells <- intersect(cells, rownames(object@meta.data))
+    if (length(cells) == 0) {
+      warning("No cells available after subsetting")
+      return(invisible(NULL))
+    }
+    df <- object@meta.data[cells, meta_cols, drop = FALSE]
+  } else {
+    df <- object@meta.data[, meta_cols, drop = FALSE]
+  }
 
   assay <- assay %||% DefaultAssay(object = object)
   DefaultAssay(object = object) <- assay
 
-  gene_exp <- FetchData(object = object, vars = gene, layer = slot)
+  gene_exp <- FetchData(object = object, vars = gene, layer = slot, cells = cells)
   if (sum(gene_exp) == 0) {
     warning("No expression in data")
     return(invisible(NULL))

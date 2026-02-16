@@ -77,8 +77,8 @@ tabUI_UV_seqfish <- function(id) {
                 bslib::card_body(
                     modUI_SeuratVlnPlot(
                         ns("vlnplot_condition"),
-                        width_default = 6,
-                        height_default = 4.5,
+                        width_default = 2.5,
+                        height_default = 4,
                         format_default = "png",
                         allow_subset = TRUE
                     )
