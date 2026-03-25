@@ -1,8 +1,6 @@
 # SkinOmicsExplorer
 
 
-# SkinOmicsExplorer
-
 SkinOmicsExplorer is an interactive R Shiny portal for exploring and querying the multi-omics datasets generated in:
 
 > **Yuqing et al.**  
