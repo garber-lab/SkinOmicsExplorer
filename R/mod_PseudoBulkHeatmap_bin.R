@@ -1,11 +1,10 @@
-modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, format_default = "pdf", allow_download = TRUE, show_bins_toggle = FALSE, show_bins_default = TRUE, show_bins_label = "Show transition") {
+modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default = 8, height_default = 8, allow_download = TRUE, show_bins_toggle = FALSE, show_bins_default = TRUE, show_bins_label = "Show transition") {
     ns <- NS(id)
 
     download_panel <- if (isTRUE(allow_download)) {
         wellPanel(
             inlineInput("Plot width:", numericInput(ns("width"), NULL, value = width_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
             inlineInput("Plot height:", numericInput(ns("height"), NULL, value = height_default, min = 0.1, step = 0.1, width = 70), label_width = "100px"),
-            inlineInput("File format:", selectInput(ns("format"), NULL, choices = c("png", "pdf", "jpeg", "tiff"), selected = format_default, width = 70), label_width = "100px"),
             downloadButton(ns("plot_heatmap_download"), "Download")
         )
     } else {
@@ -18,7 +17,7 @@ modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default 
         uiOutput(ns("splitby_ui")),
         if (isTRUE(show_bins_toggle)) bslib::input_switch(ns("show_bins"), show_bins_label, value = show_bins_default),
         bslib::input_switch(ns("cluster_genes"), "Cluster genes", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
     sidebar_content <- if (!allow_subset) {
         tagList(plot_panel, download_panel)
@@ -49,7 +48,7 @@ modUI_PseudoBulkHeatmap_bin <- function(id, allow_subset = FALSE, width_default 
 }
 
 
-modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE) {
+modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -62,6 +61,10 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
                 subsetby_columns = subsetby_columns
             )
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         tb_for_plot <- reactive({
             tb <- bulk_tb()
@@ -185,7 +188,12 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
             draw(hmap)
         })
 
-        output$plot_heatmap <- renderPlot(plot_heatmap(), res = 96) |> bindEvent(input$plot, tb_for_plot(), md_for_plot())
+        plot_heatmap_event <- plot_heatmap
+        if (isTRUE(show_plot_button)) {
+            plot_heatmap_event <- bindEvent(plot_heatmap_event, input$plot, tb_for_plot(), md_for_plot())
+        }
+
+        output$plot_heatmap <- renderPlot(plot_heatmap_event(), res = 96)
 
         output$plot_heatmap_download <- downloadHandler(
             filename = function() {
@@ -196,27 +204,16 @@ modServer_PseudoBulkHeatmap_bin <- function(id, bulk_tb, bulk_meta, dataname, gr
                     "Heatmap_", dataname,
                     "_groupby", groupby_str,
                     ifelse(is.null(splitby_str), "", paste0("_splitby", splitby_str)),
-                    ".", input$format
+                    ".pdf"
                 )
             },
             content = function(file) {
-                ggsave(filename = file, plot = plot_heatmap(), width = input$width, height = input$height, dpi = 300)
+                pdf(file, width = input$width, height = input$height)
+                plot_heatmap()
+                dev.off()
             }
         )
     })
 }
 
 
-modServer_PseudoBulkHeatmap_MCCD14 <- function(id, bulk_tb, bulk_meta, dataname, groupby_column = NULL, splitby_column = NULL, subsetby_columns = NULL, show_bins_toggle = FALSE, show_bins_default = TRUE) {
-    modServer_PseudoBulkHeatmap_bin(
-        id = id,
-        bulk_tb = bulk_tb,
-        bulk_meta = bulk_meta,
-        dataname = dataname,
-        groupby_column = groupby_column,
-        splitby_column = splitby_column,
-        subsetby_columns = subsetby_columns,
-        show_bins_toggle = show_bins_toggle,
-        show_bins_default = show_bins_default
-    )
-}

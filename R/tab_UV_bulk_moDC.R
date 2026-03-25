@@ -4,7 +4,7 @@ tabUI_UV_bulk_moDC <- function(id) {
         bslib::layout_columns(
             bslib::card(
                 bslib::card_body(
-                    modUI_UV_BulkBoxPlot(ns("bulk_boxplot"))
+                    modUI_BulkBoxPlot(ns("bulk_boxplot"))
                 )
             ),
             bslib::card(
@@ -14,7 +14,7 @@ tabUI_UV_bulk_moDC <- function(id) {
                         tags$strong("Conditions"),
                         tags$ul(
                             tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
-                            tags$li(tags$strong("KC_media:"), " keratinocyte media"),
+                            tags$li(tags$strong("DC_media:"), " keratinocyte media"),
                             tags$li(tags$strong("UV50:"), " supernatant from keratinocyte treated with 50 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
@@ -51,18 +51,18 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             if (!isTRUE(is_active())) return()
             if (is.null(bulk_cpm()) || is.null(bulk_meta())) {
                 bulk_cpm_raw <- read.csv(
-                    "shinyApp_content/UV_bulk/DC/bulk_moDC_cpm.csv",
+                    paste0(data_path(), "UV_bulk/DC/bulk_moDC_cpm.csv"),
                     row.names = 1,
                     check.names = FALSE
                 )
                 bulk_meta_raw <- read.csv(
-                    "shinyApp_content/UV_bulk/DC/bulk_moDC_metadata.csv",
+                    paste0(data_path(), "UV_bulk/DC/bulk_moDC_metadata.csv"),
                     row.names = 1,
                     stringsAsFactors = FALSE
                 )
                 bulk_meta_raw$Treatment <- factor(
                     bulk_meta_raw$Treatment,
-                    levels = c("Mock", "KC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                    levels = c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 )
                 bulk_cpm(bulk_cpm_raw)
                 bulk_meta(bulk_meta_raw)
@@ -71,7 +71,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
         
         moDC_treatment_colors <- c(
             "Mock" = "#e6bcb4",
-            "KC_media" = "#ff7f0e",
+            "DC_media" = "#ff7f0e",
             "UV50" = "#893b7f",
             "UV100" = "#a33453",
             "UV50+IFNb" = "#debc40",
@@ -81,7 +81,22 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             "LPS" = "#999999"
         )
 
-        modServer_UV_BulkBoxPlot(
+        moDC_condition_display_sets <- list(
+            "All" = list(
+                "Treatment",
+                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                ),
+            "No LPS" = list(
+                "Treatment",
+                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
+            ),
+            "KC supernatant" = list(
+                "Treatment",
+                c("Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb")
+            )
+        )
+
+        modServer_BulkBoxPlot(
             id = "bulk_boxplot",
             bulk_cpm = bulk_cpm,
             bulk_meta = bulk_meta,
@@ -91,7 +106,9 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             splitby_column = NULL,
             groupby_colors = moDC_treatment_colors,
             shape_by = NULL,
-            ylab = "CPM"
+            ylab = "CPM",
+            condition_display_sets = moDC_condition_display_sets,
+            show_plot_button = FALSE
         )
 
         modServer_BulkHeatmap(
@@ -100,7 +117,8 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
             bulk_meta = bulk_meta,
             dataname = "UV_bulk_moDC",
             groupby_column = "Biopsy",
-            splitby_column = "Treatment"
+            splitby_column = "Treatment",
+            condition_display_sets = moDC_condition_display_sets
         )
     })
 }

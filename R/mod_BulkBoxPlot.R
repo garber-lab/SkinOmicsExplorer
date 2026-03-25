@@ -1,4 +1,4 @@
-modUI_UV_BulkBoxPlot <- function(id,
+modUI_BulkBoxPlot <- function(id,
                                  width_default = 4,
                                  height_default = 3.5,
                                  format_default = "pdf",
@@ -10,8 +10,9 @@ modUI_UV_BulkBoxPlot <- function(id,
         selectizeInput(ns("gene"), "Gene:", choices = NULL, multiple = FALSE),
         uiOutput(ns("groupby_ui")),
         uiOutput(ns("splitby_ui")),
+        uiOutput(ns("condition_display_sets_ui")),
         checkboxInput(ns("log2"), "log2(CPM + 1)", value = FALSE),
-        actionButton(ns("plot"), "Plot")
+        uiOutput(ns("plot_button_ui"))
     )
 
     download_panel <- if (isTRUE(allow_download)) {
@@ -34,16 +35,18 @@ modUI_UV_BulkBoxPlot <- function(id,
     )
 }
 
-modServer_UV_BulkBoxPlot <- function(id,
+modServer_BulkBoxPlot <- function(id,
                                      bulk_cpm,
                                      bulk_meta,
+                                     condition_display_sets = NULL,
                                      dataname = "UV_bulk",
                                      feature_default = NULL,
                                      groupby_column = NULL,
                                      splitby_column = NULL,
                                      groupby_colors = NULL,
                                      shape_by = NULL,
-                                     ylab = "CPM") {
+                                     ylab = "CPM",
+                                     show_plot_button = TRUE) {
     splitby_column_missing <- missing(splitby_column)
     moduleServer(id, function(input, output, session) {
         ns <- session$ns
@@ -51,6 +54,10 @@ modServer_UV_BulkBoxPlot <- function(id,
         resolve_input <- function(x) {
             if (is.function(x)) x() else x
         }
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
 
         data_info <- reactive({
             cpm <- resolve_input(bulk_cpm)
@@ -142,6 +149,25 @@ modServer_UV_BulkBoxPlot <- function(id,
             input$splitby
         })
 
+        if (!is.null(condition_display_sets)) {
+            output$condition_display_sets_ui <- renderUI({
+                selectInput(
+                    ns("condition_display_set"),
+                    "Display conditions:",
+                    choices = names(condition_display_sets),
+                    selected = names(condition_display_sets)[1]
+                )
+            })
+        } else {
+            output$condition_display_sets_ui <- renderUI({ NULL })
+        }
+
+        conditions_for_display <- reactive({
+            if (is.null(condition_display_sets)) return(NULL)
+            req(input$condition_display_set)
+            condition_display_sets[[input$condition_display_set]]
+        })
+
         build_plot <- function() {
             info <- data_info()
             if (is.null(info)) return(NULL)
@@ -149,9 +175,20 @@ modServer_UV_BulkBoxPlot <- function(id,
             gene <- input$gene[1]
             if (!gene %in% rownames(info$cpm)) return(NULL)
 
+            cpm <- info$cpm
             meta <- info$meta
-            meta <- meta[rownames(meta) %in% colnames(info$cpm), , drop = FALSE]
+            meta <- meta[rownames(meta) %in% colnames(cpm), , drop = FALSE]
             if (nrow(meta) == 0) return(NULL)
+
+            if (!is.null(conditions_for_display())) {
+                display_conditions <- conditions_for_display()
+                condition_col <- display_conditions[[1]]
+                condition_values <- display_conditions[[2]]
+                keep_idx <- meta[[condition_col]] %in% condition_values
+                meta <- meta[keep_idx, , drop = FALSE]
+                if (nrow(meta) == 0) return(NULL)
+                cpm <- cpm[, rownames(meta), drop = FALSE]
+            }
 
             groupby <- groupby_param()
             if (is.null(groupby) || !(groupby %in% colnames(meta))) return(NULL)
@@ -174,7 +211,7 @@ modServer_UV_BulkBoxPlot <- function(id,
             }
 
             bulk_boxplot_plot(
-                cpm = info$cpm,
+                cpm = cpm,
                 meta = meta,
                 gene = gene,
                 group.by = groupby,
@@ -182,16 +219,23 @@ modServer_UV_BulkBoxPlot <- function(id,
                 shape.by = shape_by_use,
                 group.color = colors,
                 log2_scale = isTRUE(input$log2),
-                ylab = ylab
+                ylab = paste0(gene, " ", ylab)
             )
         }
 
         current_plot <- reactiveVal(ggplot2::ggplot() + ggplot2::theme_void())
 
-        observeEvent(input$plot, {
-            p <- build_plot()
-            if (!is.null(p)) current_plot(p)
-        }, ignoreNULL = FALSE)
+        if (isTRUE(show_plot_button)) {
+            observeEvent(input$plot, {
+                p <- build_plot()
+                if (!is.null(p)) current_plot(p)
+            }, ignoreNULL = FALSE)
+        } else {
+            observe({
+                p <- build_plot()
+                if (!is.null(p)) current_plot(p)
+            })
+        }
 
         output$plot_boxplot <- renderPlot(current_plot(), res = 96)
 

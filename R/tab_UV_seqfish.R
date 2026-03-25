@@ -40,8 +40,7 @@ tabUI_UV_seqfish <- function(id) {
                 modUI_PseudoBulkHeatmap_bin(
                     ns("pseudoBulk_heatmap"),
                     width_default = 16,
-                    height_default = 6,
-                    format_default = "pdf",
+                    height_default = 5,
                     allow_subset = TRUE,
                     show_bins_toggle = TRUE
                 )
@@ -64,14 +63,26 @@ tabUI_UV_seqfish <- function(id) {
                     format_default = "png"
                 ))
             ),
+            # bslib::card(
+            #     bslib::card_header("Spatial feature Plot (contour)"),
+            #     bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
+            #         ns("image_featureplot_contour"),
+            #         size_perInch_default = 500, # um per inch
+            #         format_default = "png",
+            #         sigma_default = 100
+            #     ))
+            # ),
             bslib::card(
-                bslib::card_header("Spatial feature Plot (contour)"),
-                bslib::card_body(modUI_SeuratImageFeaturePlot_contour(
-                    ns("image_featureplot_contour"),
-                    size_perInch_default = 500, # um per inch
-                    format_default = "png",
-                    sigma_default = 100
-                ))
+                bslib::card_header("Violin plot for normalized gene expression in all conditions"),
+                bslib::card_body(
+                    modUI_SeuratVlnPlot(
+                        ns("vlnplot_condition"),
+                        width_default = 2.5,
+                        height_default = 4,
+                        format_default = "png",
+                        allow_subset = TRUE
+                    )
+                )
             ),
             col_width = c(6, 6)
         )
@@ -190,6 +201,12 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             "CD4_CCL17" = "#50E3C2"
         )
 
+        fov.name.display <- c(
+            "NL" = "UV258fov1",
+            "NL_UV" = "UV258fov2",
+            "NL_UV_anif" = "UV258fov3"
+        )
+
         modServer_SeuratEmbeddingPlot(
             id = "dimplot",
             srt = srt,
@@ -199,7 +216,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
                 "CellSubtype" = colors.CellSubtype
             ),
             dataname = dataname,
-            raster = FALSE
+            raster = FALSE,
+            show_plot_button = FALSE
         )
 
         modServer_SeuratFeaturePlot(
@@ -207,7 +225,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             raster = FALSE,
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -216,7 +235,8 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratImageDimPlot(
@@ -224,6 +244,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             groupby_column = "CellSubtype",
             groupby_colors = colors.CellSubtype,
             scalebar_length = 485.437,
@@ -238,6 +259,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             srt = srt,
             dataname = dataname,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             scalebar_length = 485.437,
             scalebar_numConv = 1.03,
@@ -252,6 +274,7 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             dataname = dataname,
             colors.cell = colors.CellSubtype,
             fov_choices = NULL,
+            fov_choices_name = fov.name.display,
             feature_default = "IFNG",
             groupby_column = "CellSubtype",
             scalebar_length = 485.437,
@@ -270,6 +293,17 @@ tabServer_UV_seqfish <- function(id, data_path, active_tab) {
             splitby_column = "CellType",
             subsetby_columns = c("Condition"),
             show_bins_toggle = TRUE
+        )
+
+        modServer_SeuratVlnPlot(
+            id = "vlnplot_condition",
+            srt = srt,
+            dataname = dataname,
+            groupby_column = "Condition",
+            splitby_column = character(0),
+            subsetby_columns = c("CellSubtype"),
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
     })
 }

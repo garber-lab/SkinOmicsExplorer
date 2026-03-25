@@ -8,7 +8,7 @@ modUI_SeuratSubset <- function(id){
     )
 }
 
-modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL){
+modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL, return_cells = FALSE){
     moduleServer(id, function(input, output, session){
         ns <- session$ns
 
@@ -114,7 +114,10 @@ modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL){
             obj <- srt()
             req(obj)
             specs <- column_specs()
-            if (length(specs) == 0) return(obj)
+            if (length(specs) == 0) {
+                if (isTRUE(return_cells)) return(colnames(obj))
+                return(obj)
+            }
 
             md <- obj@meta.data
             keep <- rep(TRUE, nrow(md))
@@ -147,6 +150,7 @@ modServer_SeuratSubset <- function(id, srt, subsetby_columns = NULL){
 
             keep[is.na(keep)] <- FALSE
             cells_to_keep <- rownames(md)[keep]
+            if (isTRUE(return_cells)) return(cells_to_keep)
             if (!length(cells_to_keep)) {
                 return(obj[, character(0)])
             }

@@ -1,15 +1,6 @@
 tabUI_contact <- function(id) {
   ns <- NS(id)
 
-  placeholder_link <- function(label) {
-    tags$a(
-      href = "#",
-      target = "_blank",
-      rel = "noopener noreferrer",
-      label
-    )
-  }
-
   contact_table <- tags$table(
     class = "table table-striped table-sm align-middle",
     tags$thead(
@@ -40,7 +31,12 @@ tabUI_contact <- function(id) {
           tagList(
             "ViaFoundry",
             tags$br(),
-            placeholder_link("Company link (add URL)")
+            tags$a(
+              href = "https://www.viafoundry.com",
+              target = "_blank",
+              rel = "noopener noreferrer",
+              "https://www.viafoundry.com"
+            )
           )
         ),
         tags$td("Availability, hosting questions, and deployment support.")
@@ -51,7 +47,17 @@ tabUI_contact <- function(id) {
           tagList(
             "Manuel Garber lab, UMass Chan",
             tags$br(),
-            placeholder_link("Lab page (add URL)")
+            tags$a(
+              href = "https://www.umassmed.edu/garberlab/",
+              target = "_blank",
+              rel = "noopener noreferrer",
+              "https://www.umassmed.edu/garberlab/"
+            ),
+            tags$br(),
+            tags$a(
+              href = "mailto:Manuel.Garber@umassmed.edu",
+              "Manuel.Garber@umassmed.edu"
+            )
           )
         ),
         tags$td("Analysis methods, computational pipelines, and data interpretation questions.")
@@ -62,7 +68,10 @@ tabUI_contact <- function(id) {
           tagList(
             "Mehdi Rashighi lab, UMass Chan",
             tags$br(),
-            placeholder_link("Contact info (add URL)")
+            tags$a(
+              href = "mailto:Mehdi.Rashighi@umassmed.edu",
+              "Mehdi.Rashighi@umassmed.edu"
+            )
           )
         ),
         tags$td("Patient recruitment, sample acquisition, and wet lab experiment questions.")

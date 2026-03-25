@@ -23,7 +23,7 @@ modUI_SeuratFeaturePlot <- function(id, width_default = 6, height_default = 6, f
                     "Gene:",
                     choices = NULL
                 ),
-                actionButton(ns("plot"), "Plot")
+                uiOutput(ns("plot_button_ui"))
             ),
             download_panel,
             open = "always"
@@ -33,8 +33,14 @@ modUI_SeuratFeaturePlot <- function(id, width_default = 6, height_default = 6, f
 }
 
 
-modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, dataname, raster = NULL, feature_default = NULL) {
+modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, dataname, raster = NULL, feature_default = NULL, show_plot_button = TRUE) {
     moduleServer(id, function(input, output, session) {
+        ns <- session$ns
+
+        output$plot_button_ui <- renderUI({
+            if (isTRUE(show_plot_button)) actionButton(ns("plot"), "Plot")
+        })
+
         observeEvent(srt(),
             {
                 req(srt())
@@ -61,7 +67,12 @@ modServer_SeuratFeaturePlot <- function(id, srt, reduction_choices = NULL, datan
             ) + coord_fixed(ratio = 1)
         })
 
-        output$plot_feature <- renderPlot(plot_feature(), res = 96) |> bindEvent(input$plot)
+        plot_feature_event <- plot_feature
+        if (isTRUE(show_plot_button)) {
+            plot_feature_event <- bindEvent(plot_feature_event, input$plot)
+        }
+
+        output$plot_feature <- renderPlot(plot_feature_event(), res = 96)
 
         output$plot_feature_download <- downloadHandler(
             filename = function() {

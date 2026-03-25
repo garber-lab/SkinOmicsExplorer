@@ -19,7 +19,8 @@ RUN R -q -e 'install.packages(c("remotes","BiocManager","shiny","bslib","shinyjs
 RUN R -q -e 'BiocManager::install("ComplexHeatmap")'
 RUN R -q -e 'remotes::install_github("Yuqing66/AddOns")'
 RUN R -q -e 'remotes::install_github("Yuqing66/scSpatial")'
-RUN R -q -e 'install.packages(c("openxlsx","ggbeeswarm"))'
+RUN R -q -e 'install.packages(c("openxlsx","viridis","ggbeeswarm"))'
+
 
 COPY . /shinyApp
 

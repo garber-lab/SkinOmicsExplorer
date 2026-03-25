@@ -65,6 +65,7 @@ VlnPlot.xlabel <- function(
     log_scale = FALSE,
     colors = NULL,
     split.by = NULL,
+    cells = NULL,
     spread = NULL,
     jitter_pts = TRUE,
     plot_mean = TRUE,
@@ -77,12 +78,21 @@ VlnPlot.xlabel <- function(
   split.by <- split.by %||% character(0)
   meta_cols <- c(group.by, split.by)
   meta_cols <- meta_cols[meta_cols %in% colnames(object@meta.data)]
-  df <- object@meta.data[, meta_cols, drop = FALSE]
+  if (!is.null(cells)) {
+    cells <- intersect(cells, rownames(object@meta.data))
+    if (length(cells) == 0) {
+      warning("No cells available after subsetting")
+      return(invisible(NULL))
+    }
+    df <- object@meta.data[cells, meta_cols, drop = FALSE]
+  } else {
+    df <- object@meta.data[, meta_cols, drop = FALSE]
+  }
 
   assay <- assay %||% DefaultAssay(object = object)
   DefaultAssay(object = object) <- assay
 
-  gene_exp <- FetchData(object = object, vars = gene, layer = slot)
+  gene_exp <- FetchData(object = object, vars = gene, layer = slot, cells = cells)
   if (sum(gene_exp) == 0) {
     warning("No expression in data")
     return(invisible(NULL))
@@ -320,6 +330,10 @@ HeatmapBulk <- function(tb_cpm, md, genes = NULL, groupby, groupby.order = NULL,
     tb_cpm <- tb_cpm[genes, , drop = FALSE]
   }
 
+  if (cluster_genes) {
+    tb_cpm <- tb_cpm[apply(tb_cpm, 1, function(x) any(x > 0)), , drop = FALSE]
+  }
+
   if (!is.null(groupby.order) && groupby %in% colnames(md)) {
     md[[groupby]] <- factor(md[[groupby]], levels = groupby.order)
   }
@@ -473,6 +487,10 @@ HeatmapPseudoBulk_bin <- function(tb, md, genes = NULL, groupby, groupby.order =
 
     agg_tb_norm[, is_bin] <- sweep(agg_tb[, is_bin, drop = FALSE], 2, total_libsize_bin[cond_key_bin], "/") * 1e6
     agg_tb_norm[, is_bin] <- sweep(agg_tb_norm[, is_bin, drop = FALSE], 2, bin_counts[cond_key_bin], "*")
+  }
+
+  if (cluster_genes){
+    agg_tb_norm <- agg_tb_norm[apply(agg_tb_norm, 1, function(x) any(x > 0)), , drop = FALSE]
   }
 
   has_splitby <- !is.null(splitby) && splitby %in% colnames(agg_md)

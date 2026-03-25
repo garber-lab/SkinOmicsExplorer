@@ -14,23 +14,23 @@ dataset_card_content <- function(title, tagline, specs=NULL, tech) {
       spec_items <- lapply(seq_along(specs), function(i) {
         spec_value <- specs[[i]]
         spec_text <- if (length(spec_value) > 1) paste(spec_value, collapse = ", ") else spec_value
-        tags$small(
+        htmltools::tags$small(
           class = "d-block lh-sm",
-          tagList(tags$strong(names(specs)[i]), ": ", spec_text)
+          htmltools::tagList(htmltools::tags$strong(names(specs)[i]), ": ", spec_text)
         )
       })
       spec_block <- do.call(
-        tags$div,
+        htmltools::tags$div,
         c(list(class = "mt-2 lh-sm"), spec_items)
       )
       body <- append(body, list(spec_block))
     } else {
-      body <- append(body, list(tags$small(specs)))
+      body <- append(body, list(htmltools::tags$small(specs)))
     }
   }
-  body <- append(body, list(tags$small(class = "text-muted", tech)))
+  body <- append(body, list(htmltools::tags$small(class = "text-muted", tech)))
 
-  tagList(
+  htmltools::tagList(
     bslib::card_header(title),
     bslib::card_body(body)
   )
@@ -39,7 +39,7 @@ dataset_card_content <- function(title, tagline, specs=NULL, tech) {
 # Pre-defined dataset cards that can be dropped into the layout by ID.
 tab_home_cards <- list(
   fourDisease_indrop = dataset_card_content(
-    title = "Four disease inDrop",
+    title = "Four disease - inDrop",
     tagline = "All samples were processed under a uniform protocol, minimizing batch effects and enabling robust cross-disease comparisons.",
     specs = c(
       "Cohort composition" = "5 DM, 4 CLE, 5 psoriasis, 19 vitiligo, 11 healthy controls",
@@ -49,7 +49,7 @@ tab_home_cards <- list(
     tech = "scRNA-seq · inDrop"
   ),
   CLE_gse179633 = dataset_card_content(
-    title = "CLE GSE179633 10x",
+    title = "CLE GSE179633 - 10x",
     tagline = "Re-clustering of a deeply sequenced public CLE dataset (GSE179633).",
     specs = c(
       "Cohort composition" = "Epidermal (3 HC,5 DLE and 5 SLE); Dermal (4 HC,5 DLE and 7 SLE)",
@@ -60,7 +60,7 @@ tab_home_cards <- list(
     tech = "scRNA-seq · 10x Genomics"
   ),
   DM_10x = dataset_card_content(
-    title = "DM 10x",
+    title = "DM - 10x",
     tagline = "Myeloid cells of three DM samples with high IFNβ.",
     specs = c(
       "Cohort composition" = "3 DM",
@@ -70,10 +70,10 @@ tab_home_cards <- list(
     tech = "scRNA-seq · 10x Genomics"
   ),
   fourDisease_nulisa = dataset_card_content(
-    title = "Four disease NULISA",
+    title = "Four disease - NULISA",
     tagline = "Protein levels in interstitial fluid across four autoimmune skin diseases.",
     specs = c(
-      "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls", # !!! fill in the number
+      "Cohort composition" = "8 DM, 8 CLE, 6 psoriasis, 17 vitiligo, 12 healthy controls",
       "Sampling method" = "Suction blister fluid",
       "Skin type" = "Lesional, non-lesional, healthy skin",
       "Panel" = "NULISAseq Inflammation Panel 250 Targets"
@@ -81,7 +81,7 @@ tab_home_cards <- list(
     tech = "Proteomics · NULISA"
   ),
   UV_olink = dataset_card_content(
-    title = "UV perturbation - in vitro - OLINK",
+    title = "UV perturbation (in vitro) - OLINK",
     tagline = "Proteins secreted into supernatant by UVB-irradiated keratinocytes (KCs) pretreated with or without IFNβ. Subsequently, dendritic cells (DCs) were incubated with KC supernatants, and proteins in DC supernatants were then measured.",
     specs = c(
       "Cell type" = "Keratinocyte cell line N/TERT2G, monocyte-derived DCs from PBMCs",
@@ -90,7 +90,7 @@ tab_home_cards <- list(
     tech = "Proteomics · Olink"
   ),
   fourDisease_seqfish = dataset_card_content(
-    title = "Four disease seqFISH",
+    title = "Four disease - seqFISH",
     tagline = "Single-cell spatial transcriptomics of lesional skin from DM, CLE, psoriasis and vitiligo.",
     specs = c(
       "Cohort composition" = "2 DM, 2 CLE, 2 psoriasis, 1 vitiligo",
@@ -101,7 +101,7 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_seqfish = dataset_card_content(
-    title = "UV perturbation - in vivo - seqFISH",
+    title = "UV perturbation (in vivo) - seqFISH",
     tagline = "UVB irradiation on CLE non-lesional (NL) skin before and after Anifrolumab (type I interferon receptor antagonist) treatment.",
     specs = c(
       "Cohort composition" = "1 CLE",
@@ -113,18 +113,18 @@ tab_home_cards <- list(
     tech = "Spatial transcriptomics · seqFISH"
   ),
   UV_bulk_moDC = dataset_card_content(
-    title = "UV perturbation - in vitro - bulk RNA-seq (moDC)",
-    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC media from UV conditions (UV50/UV100 ± IFNβ) plus direct IFNβ and LPS stimulation.",
+    title = "UV perturbation (in vitro) - bulk RNA-seq (moDC)",
+    tagline = "Bulk RNA-seq of monocyte-derived DCs treated with KC supernatant from UV conditions (UV50/UV100 ± IFNβ) plus direct IFNβ and LPS stimulation.",
     specs = c(
       "Cell type" = "Monocyte-derived DCs from PBMCs",
-      "Treatments" = "Mock, KC_media, UV50, UV100, UV50+IFNβ, UV100+IFNβ, IFNβ, Direct IFNβ, LPS",
+      "Treatments" = "Mock, DC_media, UV50, UV100, UV50+IFNβ, UV100+IFNβ, IFNβ, Direct IFNβ, LPS",
       "Sampling method" = "Cell pellet"
     ),
     tech = "Transcriptomics · bulk RNA-seq"
   ),
   UV_bulk_FB = dataset_card_content(
-    title = "UV perturbation - in vitro - bulk RNA-seq (FB)",
-    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
+    title = "UV perturbation (in vitro) - bulk RNA-seq (FB)",
+    tagline = "Bulk RNA-seq of fibroblasts exposed to UV-conditioned KC media (UV100, UV50+IFNβ) and direct cytokine stimulation.",
     specs = c(
       "Cell type" = "Pannus-derived primary fibroblasts",
       "Treatments" = "Fib_media, Mock, UV100, UV50+IFNβ, IFNβ, Direct IFNβ, Direct IFNγ, Direct TNF, Direct IL-1",
@@ -139,22 +139,22 @@ tab_home_cards <- list(
 tabUI_home <- function(id) {
   ns <- NS(id)
 
-  tagList(
+  htmltools::tagList(
     bslib::card(
       bslib::card_header("Introduction"),
-      bslib::card_body(tags$p(
-        "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset and link you to the corresponding analysis modules."
+      bslib::card_body(htmltools::tags$p(
+        "Skin Omics Explorer is an interactive portal for exploring multi-omics datasets spanning autoimmune skin diseases and UV perturbation models. Use the navigation menus to browse scRNA-seq, proteomics, spatial transcriptomics, and bulk RNA-seq studies in dermatomyositis (DM), cutaneous lupus erythematosus (CLE), psoriasis, and vitiligo, and visualize gene/protein expression across cell types, skin states, and treatments. The cards below summarize each dataset."
       ))
     ),
     bslib::card(
       bslib::card_header("Publication"),
       bslib::card_body(
-        tags$h5(
+        htmltools::tags$h5(
           class = "mb-2",
           "A Spatially Coordinated Keratinocyte-Fibroblast Circuit Recruits MMP9+ Myeloid Cells to Drive IFN-I-Driven Inflammation in Photosensitive Autoimmunity"
         ),
-        tags$small(class = "text-muted", "Abstract"),
-        tags$p(
+        htmltools::tags$small(class = "text-muted", "Abstract"),
+        htmltools::tags$p(
           paste(
             "Photosensitivity is central to cutaneous lupus erythematosus (CLE) and dermatomyositis (DM),",
             "but the mechanisms linking UVB exposure to tissue-specific autoimmunity are poorly defined.",
@@ -177,7 +177,7 @@ tabUI_home <- function(id) {
     ),
     bslib::card(
       bslib::card_header("Citation"),
-      bslib::card_body(tags$p(
+      bslib::card_body(htmltools::tags$p(
         "" # !!! Add citation info here
       ))
     ),
@@ -206,10 +206,30 @@ tabUI_home <- function(id) {
             bslib::card(tab_home_cards[["DM_10x"]]),
             width = 1/2
           ),
-          tags$h5(class = "mt-4", "UV perturbation series"),
+          tags$h5(class = "mt-4", "UV perturbation series (in vivo)"),
           layout_column_wrap(
-            bslib::card(tab_home_cards[["UV_olink"]]),
+            tags$div(
+              class = "mb-3",
+              tags$img(
+                src = "assets/scheme_UV_invivo.png",
+                alt = "UV perturbation series (in vivo) schematic",
+                class = "img-fluid"
+              )
+            ),
             bslib::card(tab_home_cards[["UV_seqfish"]]),
+            width = 1/2
+          ),
+          tags$h5(class = "mt-4", "UV perturbation series (in vitro)"),
+          layout_column_wrap(
+            tags$div(
+              class = "mb-3",
+              tags$img(
+                src = "assets/scheme_UV_invitro.png",
+                alt = "UV perturbation series (in vitro) schematic",
+                class = "img-fluid"
+              )
+            ),
+            bslib::card(tab_home_cards[["UV_olink"]]),
             bslib::card(tab_home_cards[["UV_bulk_moDC"]]),
             bslib::card(tab_home_cards[["UV_bulk_FB"]]),
             width = 1/2

@@ -4,7 +4,7 @@ tabUI_UV_bulk_FB <- function(id) {
         bslib::layout_columns(
             bslib::card(
                 bslib::card_body(
-                    modUI_UV_BulkBoxPlot(ns("bulk_boxplot"))
+                    modUI_BulkBoxPlot(ns("bulk_boxplot"))
                 )
             ),
             bslib::card(
@@ -51,13 +51,13 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             if (!isTRUE(is_active())) return()
             if (is.null(bulk_cpm()) || is.null(bulk_meta())) {
                 bulk_cpm_raw <- read.csv(
-                    "UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv",
+                    paste0(data_path(), "UV_bulk/FB/Fib_sup_KC_normalized_counts_combatseq.tsv"),
                     row.names = 1,
                     check.names = FALSE,
                     sep = "\t"
                 )
                 bulk_meta_raw <- read.csv(
-                    "UV_bulk/FB/bulk_FB_metadata.csv",
+                    paste0(data_path(), "UV_bulk/FB/bulk_FB_metadata.csv"),
                     row.names = 1,
                     stringsAsFactors = FALSE
                 )
@@ -82,7 +82,22 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             "Direct IL-1" = "#009E73"
         )
 
-        modServer_UV_BulkBoxPlot(
+        FB_condition_display_sets <- list(
+            "All" = list(
+                "Treatment",
+                c("Fib_media","Mock","UV100","UV50+IFNb","IFNb","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
+                ),
+            "KC supernatant" = list(
+                "Treatment",
+                c("Mock","UV100","UV50+IFNb","IFNb")
+            ),
+            "Cytokine" = list(
+                "Treatment",
+                c("Fib_media","Direct IFNb","Direct IFNg","Direct TNF","Direct IL-1")
+            )
+        )
+
+        modServer_BulkBoxPlot(
             id = "bulk_boxplot",
             bulk_cpm = bulk_cpm,
             bulk_meta = bulk_meta,
@@ -92,7 +107,9 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             groupby_colors = FB_treatment_colors,
             splitby_column = NULL,
             shape_by = NULL,
-            ylab = "CPM"
+            ylab = "CPM",
+            condition_display_sets = FB_condition_display_sets,
+            show_plot_button = FALSE
         )
 
         modServer_BulkHeatmap(
@@ -101,7 +118,8 @@ tabServer_UV_bulk_FB <- function(id, data_path, active_tab) {
             bulk_meta = bulk_meta,
             dataname = "UV_bulk_FB",
             groupby_column = "Biopsy",
-            splitby_column = "Treatment"
+            splitby_column = "Treatment",
+            condition_display_sets = FB_condition_display_sets
         )
     })
 }

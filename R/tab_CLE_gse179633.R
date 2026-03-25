@@ -27,8 +27,8 @@ tabUI_CLE_gse179633 <- function(id){
             bslib::card_body(
                 modUI_SeuratVlnPlot(
                     ns("vlnplot_celltype"),
-                    width_default = 15,
-                    height_default = 4.5,
+                    width_default = 23,
+                    height_default = 5,
                     format_default = "png",
                     allow_subset = TRUE
                 )
@@ -39,9 +39,8 @@ tabUI_CLE_gse179633 <- function(id){
             bslib::card_body(
                 modUI_PseudoBulkHeatmap_bin(
                     ns("pseudoBulk_heatmap2"),
-                    width_default = 6,
-                    height_default = 10,
-                    format_default = "pdf",
+                    width_default = 14,
+                    height_default = 5,
                     allow_subset = TRUE,
                     show_bins_toggle = TRUE,
                     show_bins_label = "Show transition"
@@ -54,8 +53,8 @@ tabUI_CLE_gse179633 <- function(id){
                 bslib::card_body(
                     modUI_SeuratVlnPlot(
                         ns("vlnplot_tissueType_disease"),
-                        width_default = 6,
-                        height_default = 4.5,
+                        width_default = 4,
+                        height_default = 4,
                         format_default = "png",
                         allow_subset = FALSE
                     )
@@ -66,9 +65,8 @@ tabUI_CLE_gse179633 <- function(id){
                 bslib::card_body(
                     modUI_PseudoBulkHeatmap_bin(
                         ns("pseudoBulk_heatmap"),
-                        width_default = 6,
-                        height_default = 10,
-                        format_default = "pdf",
+                        width_default = 4,
+                        height_default = 3,
                         allow_subset = TRUE
                     )
                 )
@@ -127,7 +125,8 @@ tabServer_CLE_gse179633 <- function(id, data_path, active_tab){
             srt = srt,
             groupby_default = "CellType",
             dataname = dataname,
-            raster = FALSE
+            raster = FALSE,
+            show_plot_button = FALSE
         )
 
         modServer_SeuratFeaturePlot(
@@ -135,7 +134,8 @@ tabServer_CLE_gse179633 <- function(id, data_path, active_tab){
             srt = srt,
             dataname = dataname,
             raster = FALSE,
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_SeuratVlnPlot(
@@ -145,7 +145,8 @@ tabServer_CLE_gse179633 <- function(id, data_path, active_tab){
             groupby_column = "CellSubtype",
             splitby_column = "CellType",
             subsetby_columns = c("Disease", "tissueType"),
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
 
         modServer_PseudoBulkHeatmap_bin(
@@ -166,7 +167,8 @@ tabServer_CLE_gse179633 <- function(id, data_path, active_tab){
             groupby_column = "tissueType",
             splitby_column = "Disease",
             subsetby_columns = c("CellType"),
-            feature_default = "IFNG"
+            feature_default = "IFNG",
+            show_plot_button = FALSE
         )
         
         modServer_PseudoBulkHeatmap_bin(
