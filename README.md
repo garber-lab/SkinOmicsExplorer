@@ -1,11 +1,5 @@
 # SkinOmicsExplorer
----
-title: "SkinOmicsExplorer"
-output:
-  github_document:
-    toc: true
-    toc_depth: 3
----
+
 
 # SkinOmicsExplorer
 
