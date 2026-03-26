@@ -14,7 +14,7 @@ tabUI_UV_bulk_moDC <- function(id) {
                         tags$strong("Conditions"),
                         tags$ul(
                             tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
-                            tags$li(tags$strong("DC_media:"), " keratinocyte media"),
+                            tags$li(tags$strong("DC_media:"), " dendritic cell media"),
                             tags$li(tags$strong("UV50:"), " supernatant from keratinocyte treated with 50 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
