@@ -5,4 +5,4 @@ default:
 production:
 
 development:
-  data: "/Users/yuqing/Dropbox (UMass Medical School)/Ongoing/data_hosting/shinyApp_content"
+  data: "shinyApp_content"
