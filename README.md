@@ -35,10 +35,10 @@ to enable interactive visualization of gene and protein expression across diseas
 SkinOmicsExplorer builds on custom visualization and analysis frameworks developed in:
 
 - **AddOns** — reusable Shiny modules and visualization utilities  
-   https://github.com/mgarber/AddOns  
+   https://github.com/garber-lab/AddOns  
 
 - **scSpatial** — spatial transcriptomics processing and visualization tools  
-   https://github.com/Yuqing66/scSpatial  
+   https://github.com/garber-lab/scSpatial  
 
 These repositories provide core functionality for interactive plotting, spatial rendering, and multi-omics integration.
 
@@ -47,12 +47,41 @@ These repositories provide core functionality for interactive plotting, spatial 
 ## Running 
 Docker images are available for easy running of the portal without installing dependencies 
 ```bash
-docker pull yuqing987/r-skinomicsexplorer-arm
+docker pull ghcr.io/garber-lab/skinomicsexplorer:latest
 
 docker run -p 8888:8888 \
   -v "./shinyApp_content":/home/app_data/ \
-  -it yuqing987/r-skinomicsexplorer-arm:latest
+  -it ghcr.io/garber-lab/skinomicsexplorer:latest
 ```
+
+Then open your browser at:
+```bash
+http://localhost:8888
+```
+
+## Resource requirements
+For small and moderate datasets, default Docker settings may be sufficient.
+However, larger datasets (e.g., GSE179633 single-cell RNA-seq) require substantially more memory.
+
+Common issue
+
+At  least on macOS (Docker Desktop), the default configuration limits available memory, which can cause:
+
+- sudden app crashes
+- no visible error messages
+- instability when loading large datasets
+
+This is typically due to out-of-memory (OOM) conditions.
+
+### Recommended Docker Desktop Settings (Tested)
+To ensure stable performance with large datasets, we recommend:
+
+- **CPU**: 12 cores
+- **Memory**: 12 GB
+- **Swap**: 2 GB
+
+These settings were tested and found sufficient for interactive use with large single-cell datasets such as GSE179633.
+
 ## Citation
 Yuqing et al.
 A Spatially Coordinated Keratinocyte–Fibroblast Circuit Recruits MMP9+ Myeloid Cells
