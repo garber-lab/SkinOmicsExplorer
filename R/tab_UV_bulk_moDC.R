@@ -62,7 +62,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
                 )
                 bulk_meta_raw$Treatment <- factor(
                     bulk_meta_raw$Treatment,
-                    levels = c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                    levels = c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 )
                 bulk_cpm(bulk_cpm_raw)
                 bulk_meta(bulk_meta_raw)
