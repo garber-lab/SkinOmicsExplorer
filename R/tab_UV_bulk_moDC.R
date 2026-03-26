@@ -84,11 +84,11 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
         moDC_condition_display_sets <- list(
             "All" = list(
                 "Treatment",
-                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 ),
             "No LPS" = list(
                 "Treatment",
-                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
+                c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
             ),
             "KC supernatant" = list(
                 "Treatment",
