@@ -214,6 +214,7 @@ modServer_BulkHeatmap <- function(id, bulk_tb, bulk_meta, condition_display_sets
                     "_groupby",
                     groupby_str,
                     ifelse(is.null(splitby_str), "", paste0("_splitby", splitby_str)),
+                    ifelse(is.null(input$condition_display_set), "", paste0("_", input$condition_display_set)),
                     ".",
                     input$format
                 )

@@ -16,8 +16,9 @@ RUN apt-get update \
 
 RUN R -q -e 'install.packages(c("remotes","BiocManager","shiny","bslib","shinyjs","tidyr","ggplot2","plotly","dplyr","gganimate","ggforce","networkD3","rgl","transport","webshot","eulerr"))' \
   && R -q -e 'remotes::install_version("Seurat", version="5.3.0", repos="https://cloud.r-project.org")'
+RUN R -q -e 'BiocManager::install("edgeR")'
 RUN R -q -e 'BiocManager::install("ComplexHeatmap")'
-RUN R -q -e 'remotes::install_github("Yuqing66/AddOns")'
+RUN R -q -e 'remotes::install_github("Yuqing66/AddOns", lib="/usr/local/lib/R/site-library")'
 RUN R -q -e 'remotes::install_github("Yuqing66/scSpatial")'
 RUN R -q -e 'install.packages(c("openxlsx","viridis","ggbeeswarm"))'
 

@@ -14,7 +14,7 @@ tabUI_UV_bulk_moDC <- function(id) {
                         tags$strong("Conditions"),
                         tags$ul(
                             tags$li(tags$strong("Mock:"), " supernatant from keratinocyte"),
-                            tags$li(tags$strong("DC_media:"), " keratinocyte media"),
+                            tags$li(tags$strong("DC_media:"), " dendritic cell media"),
                             tags$li(tags$strong("UV50:"), " supernatant from keratinocyte treated with 50 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV100:"), " supernatant from keratinocyte treated with 100 mJ/cm",tags$sup("2")," UVB"),
                             tags$li(tags$strong("UV50+IFNβ:"), " supernatant from keratinocyte pretreated with IFNβ, then 50 mJ/cm",tags$sup("2")," UVB"),
@@ -35,7 +35,7 @@ tabUI_UV_bulk_moDC <- function(id) {
         bslib::card(
             bslib::card_header("Heatmap for bulk gene expression"),
             bslib::card_body(
-                modUI_BulkHeatmap(ns("bulk_heatmap"))
+                modUI_BulkHeatmap(ns("bulk_heatmap"), width_default = 8, height_default = 2)
             )
         )
     )
@@ -62,7 +62,7 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
                 )
                 bulk_meta_raw$Treatment <- factor(
                     bulk_meta_raw$Treatment,
-                    levels = c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                    levels = c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 )
                 bulk_cpm(bulk_cpm_raw)
                 bulk_meta(bulk_meta_raw)
@@ -84,11 +84,11 @@ tabServer_UV_bulk_moDC <- function(id, data_path, active_tab) {
         moDC_condition_display_sets <- list(
             "All" = list(
                 "Treatment",
-                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
+                c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb", "LPS")
                 ),
             "No LPS" = list(
                 "Treatment",
-                c("Mock", "DC_media", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
+                c("DC_media", "Mock", "UV50", "UV100", "UV50+IFNb", "UV100+IFNb", "IFNb", "Direct IFNb")
             ),
             "KC supernatant" = list(
                 "Treatment",

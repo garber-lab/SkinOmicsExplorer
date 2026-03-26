@@ -35,7 +35,7 @@ tabUI_UV_bulk_FB <- function(id) {
         bslib::card(
             bslib::card_header("Heatmap for bulk gene expression"),
             bslib::card_body(
-                modUI_BulkHeatmap(ns("bulk_heatmap"))
+                modUI_BulkHeatmap(ns("bulk_heatmap"), width_default = 10, height_default = 2)
             )
         )
     )

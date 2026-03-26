@@ -272,6 +272,10 @@ HeatmapPseudoBulk <- function(tb, md, genes = NULL, groupby, groupby.order = NUL
 
   agg_tb_norm <- sweep(agg_tb, 2, agg_libsize, "/") * 1e6
 
+  if (cluster_genes){
+    agg_tb_norm <- agg_tb_norm[apply(agg_tb_norm, 1, function(x) any(x > 0)), , drop = FALSE]
+  }
+  
   ordered_cols <- colnames(agg_tb_norm)
   if (length(ordered_cols) > 0) {
     if (is.factor(agg_md[[groupby]])) {
