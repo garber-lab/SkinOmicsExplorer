@@ -15,7 +15,7 @@ The portal integrates:
 - bulk RNA-seq  
 - targeted proteomics (OLINK & NULISA)
 
-to enable interactive visualization of gene and protein expression across diseases, cell types, spatial contexts, and experimental perturbations.
+to enable interactive visualization of gene and protein expression across diseases, cell types, spatial contexts, and experimental perturbations and to visualize these in plots simiar to those used in our paper.
 
 ---
 
