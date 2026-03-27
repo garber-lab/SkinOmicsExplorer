@@ -4,7 +4,7 @@
 SkinOmicsExplorer is an interactive R Shiny portal for exploring and querying the multi-omics datasets generated in:
 
 > **Yuqing et al.**  
-> *A Spatially Coordinated Keratinocyte–Fibroblast Circuit Recruits MMP9⁺ Myeloid Cells to Drive IFN-I-Driven Inflammation in Photosensitive Autoimmunity*  
+*A Spatially Coordinated Keratinocyte–Fibroblast Circuit Recruits MMP9⁺ Myeloid Cells to Drive IFN-I-Driven Inflammation in Photosensitive Autoimmunity*  
 Yuqing Wang, Khashayar Afshari, Nazgol-Sadat Haddadi, Carolina Salomão Lopes, Chee-Huat Linus Eng, Nuria Martinez, Leah Whiteman, Ksenia S Anufrieva, Kevin Wei, Kirsten Frieda, Stefania Gallucci, Misha Rosenbach, Ruth Ann Vleugels, John E Harris, Mehdi Rashighi, Manuel Garber
 bioRxiv 2025.08.19.670635; doi: https://doi.org/10.1101/2025.08.19.670635
 
