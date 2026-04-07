@@ -15,7 +15,9 @@ The portal integrates:
 - bulk RNA-seq  
 - targeted proteomics (OLINK & NULISA)
 
-to enable interactive visualization of gene and protein expression across diseases, cell types, spatial contexts, and experimental perturbations and to visualize these in plots simiar to those used in our paper.
+to enable interactive exploration of gene and protein expression across diseases, cell types, spatial contexts, and experimental perturbations, with visualization mirroring those used in our paper.
+
+A hosted version of this application can be accessed at [https://CD14photosensitivity.umassmed.edu](https://CD14photosensitivity.umassmed.edu)
 
 ---
 
